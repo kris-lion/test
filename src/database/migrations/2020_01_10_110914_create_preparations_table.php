@@ -25,14 +25,14 @@ class CreatePreparationsTable extends Migration
             $table->foreign('unit_id')->references('id')->on('units')
                 ->onUpdate('cascade')->onDelete('set null');
             $table->integer('quantity')->comment('Количество единиц препарата с учетом фасовки');
-            $table->unsignedBigInteger('product_class_id')->unsigned()->comment('Идентификатор класса товара');
+            $table->unsignedBigInteger('product_class_id')->nullable()->unsigned()->comment('Идентификатор класса товара');
             $table->foreign('product_class_id')->references('id')->on('product_classes')
                 ->onUpdate('cascade')->onDelete('set null');
-            $table->unsignedBigInteger('generic_name_id')->unsigned()->comment('Идентификатор международного непатентованного наименования');
+            $table->unsignedBigInteger('generic_name_id')->nullable()->unsigned()->comment('Идентификатор международного непатентованного наименования');
             $table->foreign('generic_name_id')->references('id')->on('generic_names')
                 ->onUpdate('cascade')->onDelete('set null');
             $table->string('dosage')->comment('Дозировка');
-            $table->unsignedBigInteger('dosage_form_id')->unsigned()->comment('Идентификатор лекарственной формы');
+            $table->unsignedBigInteger('dosage_form_id')->nullable()->unsigned()->comment('Идентификатор лекарственной формы');
             $table->foreign('dosage_form_id')->references('id')->on('dosage_forms')
                 ->onUpdate('cascade')->onDelete('set null');
             $table->timestamps();
