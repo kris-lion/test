@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreatePreparationsTable extends Migration
+class CreateProductsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreatePreparationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('preparations', function (Blueprint $table) {
+        Schema::create('products', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('standard')->comment('Эталонное наименование');
             $table->string('name')->nullable()->comment('Имя');
@@ -46,6 +46,6 @@ class CreatePreparationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('nomenclature');
+        Schema::dropIfExists('products');
     }
 }

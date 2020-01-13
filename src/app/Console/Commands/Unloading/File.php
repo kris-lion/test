@@ -4,7 +4,7 @@ namespace App\Console\Commands\Unloading;
 
 use App\Models\Dosage\Form;
 use App\Models\Generic;
-use App\Models\Preparation;
+use App\Models\Product;
 use App\Models\Product\ProductClass;
 use App\Models\Unit;
 use Illuminate\Console\Command;
@@ -25,14 +25,13 @@ class File extends Command
     {
         $disk = Storage::disk('data');
 
-
         if (($handle = fopen($disk->path('medicaments.csv'), 'r')) !== false) {
             $i = 0;
             while (($row = fgetcsv($handle, 1000, ",")) !== false) {
                 echo "{$i}\n";
                 $row = array_map('trim', $row);
 
-                $preparation = Preparation::firstOrCreate([
+                $product = Product::firstOrCreate([
                     'standard' => $row[0]
                 ]);
 
@@ -56,7 +55,7 @@ class File extends Command
                     'name' => $row[13]
                 ]);
 
-                $preparation->update([
+                $product->update([
                     'name'             => $row[1],
                     'dosage_short'     => $row[2],
                     'packing'          => $row[3],

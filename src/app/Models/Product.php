@@ -6,9 +6,9 @@ use App\Models\Dosage\Form;
 use App\Models\Product\ProductClass;
 use Illuminate\Database\Eloquent\Model;
 
-class Preparation extends Model
+class Product extends Model
 {
-    protected $table = 'preparations';
+    protected $table = 'products';
 
     /**
      * @var array
