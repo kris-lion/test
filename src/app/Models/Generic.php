@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Generic extends Model
 {
-    protected $table = 'generic_names';
+    protected $table = 'generics';
 
     /**
      * @var array

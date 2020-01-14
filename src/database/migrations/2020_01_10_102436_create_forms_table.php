@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateGenericNamesTable extends Migration
+class CreateFormsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateGenericNamesTable extends Migration
      */
     public function up()
     {
-        Schema::create('generic_names', function (Blueprint $table) {
+        Schema::create('forms', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->comment('Наименование');
         });
@@ -26,6 +26,6 @@ class CreateGenericNamesTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('generic_names');
+        Schema::dropIfExists('forms');
     }
 }

@@ -1,12 +1,12 @@
 <?php
 
-namespace App\Models\Product;
+namespace App\Models\Product\Category;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ProductClass extends Model
+class Group extends Model
 {
-    protected $table = 'product_classes';
+    protected $table = 'groups';
 
     /**
      * @var array

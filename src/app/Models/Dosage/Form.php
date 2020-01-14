@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Form extends Model
 {
-    protected $table = 'dosage_forms';
+    protected $table = 'forms';
 
     /**
      * @var array

@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateDosageFormsTable extends Migration
+class CreateGenericsTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateDosageFormsTable extends Migration
      */
     public function up()
     {
-        Schema::create('dosage_forms', function (Blueprint $table) {
+        Schema::create('generics', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->comment('Наименование');
         });
@@ -26,6 +26,6 @@ class CreateDosageFormsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('dosage_forms');
+        Schema::dropIfExists('generics');
     }
 }
