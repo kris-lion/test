@@ -3,38 +3,41 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Providers\RouteServiceProvider;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Resources\User as UserResource;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Tymon\JWTAuth\Exceptions\JWTException;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 class LoginController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Login Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller handles authenticating users for the application and
-    | redirecting them to your home screen. The controller uses a trait
-    | to conveniently provide its functionality to your applications.
-    |
-    */
-
-    use AuthenticatesUsers;
-
     /**
-     * Where to redirect users after login.
+     * Вход
      *
-     * @var string
+     * @return AnonymousResourceCollection
      */
-    protected $redirectTo = RouteServiceProvider::HOME;
-
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
+    public function post(LoginRequest $request)
     {
-        $this->middleware('guest')->except('logout');
+        try {
+            try {
+                if (!$token = JWTAuth::attempt($request->only('login', 'password'))) {
+                    return response()->make(['message' => trans('auth.failed')], 403);
+                }
+            } catch (JWTException $e) {
+                Log::error($e);
+                return response()->make(['message' => trans('http.status.500')], 500);
+            }
+
+            return response()->json(['account' => new UserResource(Auth::user()->load('roles.permissions'))])->header('Authorization', "Bearer {$token}");
+        } catch (HttpException $e) {
+            Log::error($e);
+            return response()->make(['message' => $e->getMessage()], $e->getStatusCode());
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->make(['message' => trans('http.status.500')], 500);
+        }
     }
 }
