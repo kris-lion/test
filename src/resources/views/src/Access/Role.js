@@ -9,7 +9,9 @@ import {
     Fab
 } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
-import { CategoryActions } from "./actions/category";
+import { RoleActions } from "./actions/role";
+import { RoleForm } from "./components/RoleForm";
+import { PermissionActions } from "./actions/permission";
 
 const style = theme => ({
     field: {
@@ -42,14 +44,20 @@ const columns = [
         align: 'center',
         format: value => value.toLocaleString()
     },
+    {
+        id: 'key',
+        label: 'Уникальный ключ',
+        align: 'center',
+        format: value => value.toLocaleString()
+    }
 ];
 
-class Category extends React.Component {
+class Role extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            category: null,
+            role: null,
             dialog: false,
             page: 0,
             rowsPerPage: 10
@@ -57,28 +65,30 @@ class Category extends React.Component {
     }
 
     componentDidMount () {
-        const { actions } = this.props
+        const { actions, permission } = this.props
         const { rowsPerPage } = this.state
 
-        return actions.categories({ limit: rowsPerPage })
+        permission.permissions();
+
+        return actions.roles({ limit: rowsPerPage })
     }
 
     componentWillUnmount() {
         const { dispatch } = this.props
 
-        dispatch({ type: 'PRODUCTS_CLEAR'})
+        dispatch({ type: 'ROLES_CLEAR'})
     }
 
     render() {
-        const { categories, classes } = this.props
-        const { category, dialog, page, rowsPerPage } = this.state
+        const { roles, classes } = this.props
+        const { role, dialog, page, rowsPerPage } = this.state
 
         const handleDelete = (id) => {
             const { actions } = this.props
 
             return actions.remove(id).then(
                 () => {
-                    return actions.categories({ page: page + 1, limit: rowsPerPage })
+                    return actions.roles({ page: page + 1, limit: rowsPerPage })
                 }
             )
         }
@@ -91,7 +101,7 @@ class Category extends React.Component {
             } else {
                 return actions.add(values).then(
                     () => {
-                        return actions.categories({ page: page + 1, limit: rowsPerPage })
+                        return actions.roles({ page: page + 1, limit: rowsPerPage })
                     }
                 )
             }
@@ -100,7 +110,7 @@ class Category extends React.Component {
         const handleChangePage = (event, newPage) => {
             const { actions } = this.props
 
-            return actions.categories({ page: ++newPage, limit: rowsPerPage }).then(
+            return actions.roles({ page: ++newPage, limit: rowsPerPage }).then(
                 () => {
                     this.setState({ page: --newPage })
                 }
@@ -112,7 +122,7 @@ class Category extends React.Component {
 
             this.setState({ page: 0, rowsPerPage: +event.target.value })
 
-            return actions.categories({ page: 1, limit: +event.target.value})
+            return actions.roles({ page: 1, limit: +event.target.value})
         };
 
         return (
@@ -134,9 +144,12 @@ class Category extends React.Component {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {categories.data.map(item => {
+                                {roles.data.map(item => {
                                     return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, category: item })}}>
+                                        <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, role: item })}}>
+                                            <TableCell align="center">
+                                                { item.description }
+                                            </TableCell>
                                             <TableCell align="center">
                                                 { item.name }
                                             </TableCell>
@@ -151,7 +164,7 @@ class Category extends React.Component {
                     <TablePagination
                         rowsPerPageOptions={ [10, 25, 100] }
                         component="div"
-                        count={ categories.data.length ? categories.meta.total : 0 }
+                        count={ roles.data.length ? roles.meta.total : 0 }
                         rowsPerPage={ rowsPerPage }
                         page={ page }
                         onChangePage={ handleChangePage }
@@ -161,27 +174,29 @@ class Category extends React.Component {
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />
                 </Fab>
+                { dialog && <RoleForm role = { role } open = { dialog } handleClose = {() => { this.setState({ dialog: false, role: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
             </Grid>
         )
     }
 }
 
 function mapStateToProps(state) {
-    const { categories } = state.category
+    const { roles } = state.role
 
     return {
-        categories
+        roles
     }
 }
 
 function mapDispatchToProps(dispatch) {
     return {
         dispatch,
-        actions: bindActionCreators(CategoryActions, dispatch)
+        actions: bindActionCreators(RoleActions, dispatch),
+        permission: bindActionCreators(PermissionActions, dispatch)
     }
 }
 
-Category = withStyles(style)(Category)
+Role = withStyles(style)(Role)
 
-const connectedCategory = connect(mapStateToProps, mapDispatchToProps)(Category)
-export { connectedCategory as Category }
+const connectedRole = connect(mapStateToProps, mapDispatchToProps)(Role)
+export { connectedRole as Role }

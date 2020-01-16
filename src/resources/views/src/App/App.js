@@ -7,11 +7,14 @@ import {
     AppBar,
     Container,
     Toolbar,
-    Grid,  Paper, List, ListItem, ListItemText,
+    Grid, Collapse, Paper, List, ListItem, ListItemText,
     Typography,
     Button, LinearProgress
 } from '@material-ui/core';
+import { ExpandLess, ExpandMore }from '@material-ui/icons';
 import { bindActionCreators } from "redux";
+
+import { AuthorizationService } from '../Auth/services/authorization'
 
 const style = theme => ({
     container: {
@@ -21,7 +24,7 @@ const style = theme => ({
     body: {
         'height': '100%'
     },
-    field: {
+    item: {
         'height': '100%',
         'padding': theme.spacing(1, 1)
     },
@@ -30,6 +33,15 @@ const style = theme => ({
     },
     title: {
         'flex-grow': 1
+    },
+    nested: {
+        paddingLeft: theme.spacing(4)
+    },
+    paper: {
+        'height': 'calc(100% - 112px)',
+        'border-radius': 0,
+        'padding': theme.spacing(3, 2),
+        'margin': theme.spacing(3, 2)
     },
     search: {
         position: 'relative',
@@ -69,30 +81,23 @@ const style = theme => ({
 })
 
 class App extends React.Component {
-    constructor (props) {
-        super(props)
+    constructor(props) {
+        super(props);
 
         this.state = {
-            list: [
-                {
-                    path: '/products',
-                    name: 'Эталоны'
-                },
-                {
-                    path: '/product/categories',
-                    name: 'Категории эталонов'
-                },
-                {
-                    path: '/access',
-                    name: 'Управление доступом'
-                }
-            ]
-        }
+            open: (props.location.pathname.indexOf('access') >= 0) ? true : false
+        };
     }
 
     render() {
-        const { location, application, content, classes } = this.props
-        const { list } = this.state
+        const { location, application, account, content, classes } = this.props
+        const { open } = this.state
+
+        let access = AuthorizationService.permissions(account, ['role', 'user'])
+
+        const handleClick = () => {
+            this.setState({ open: !open })
+        }
 
         return (
             <Grid container direction='column' justify='flex-start' alignItems='stretch' className={classes.content}>
@@ -103,7 +108,7 @@ class App extends React.Component {
                         </Typography>
                         <Button
                             color="inherit"
-                            component={Link}
+                            component={ Link }
                             to='/logout'
                         >
                             Выйти
@@ -114,18 +119,39 @@ class App extends React.Component {
                 <Container fixed className={ classes.container }>
                     <Paper className={ classes.paper }>
                         <Grid container direction="row" justify="flex-start" alignItems="flex-start" className={ classes.body }>
-                            <Grid item md={3}>
+                            <Grid item md={ 3 }>
                                 <List aria-label="contacts">
-                                    {list.map(obj => {
-                                        return (
-                                            <ListItem key={ obj.path } selected={ location.pathname === obj.path } button component={ Link } to={ obj.path }>
-                                                <ListItemText primary={ obj.name } />
-                                            </ListItem>
-                                        )
-                                    })}
+                                    <ListItem selected={ location.pathname === '/products' } button component={ Link } to={ '/products' }>
+                                        <ListItemText primary={ 'Эталоны' } />
+                                    </ListItem>
+                                    <ListItem selected={ location.pathname === '/product/categories' } button component={ Link } to={ '/product/categories' }>
+                                        <ListItemText primary={ 'Категории эталонов' } />
+                                    </ListItem>
+                                    { access &&
+                                        <ListItem button onClick={handleClick}>
+                                            <ListItemText primary={'Управление доступом'}/>
+                                            {open ? <ExpandLess/> : <ExpandMore/>}
+                                        </ListItem>
+                                    }
+                                    { access &&
+                                        <Collapse in={ open } timeout="auto" unmountOnExit>
+                                            <List component="div" disablePadding>
+                                                { AuthorizationService.permissions(account, 'user') &&
+                                                    <ListItem selected={location.pathname === '/access/users'} button component={Link} to={'/access/users'} className={classes.nested}>
+                                                        <ListItemText primary={'Пользователи'}/>
+                                                    </ListItem>
+                                                }
+                                                { AuthorizationService.permissions(account, 'role') &&
+                                                    <ListItem selected={location.pathname === '/access/roles'} button component={Link} to={'/access/roles'} className={classes.nested}>
+                                                        <ListItemText primary={'Роли'}/>
+                                                    </ListItem>
+                                                }
+                                            </List>
+                                        </Collapse>
+                                    }
                                 </List>
                             </Grid>
-                            <Grid item md={9} className={ classes.field }>
+                            <Grid item md={9} className={ classes.item }>
                                 { content }
                             </Grid>
                         </Grid>
@@ -138,9 +164,11 @@ class App extends React.Component {
 
 function mapStateToProps(state) {
     const { application } = state
+    const { account } = state.account
 
     return {
         application,
+        account
     }
 }
 

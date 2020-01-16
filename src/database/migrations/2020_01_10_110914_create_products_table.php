@@ -24,7 +24,7 @@ class CreateProductsTable extends Migration
             $table->unsignedBigInteger('unit_id')->nullable()->unsigned()->comment('Идентификатор единицы измерения');
             $table->foreign('unit_id')->references('id')->on('units')
                 ->onUpdate('cascade')->onDelete('set null');
-            $table->integer('quantity')->nullable()->comment('Количество единиц препарата с учетом фасовки');
+            $table->integer('quantity')->nullable()->comment('Количество единиц с учетом фасовки');
             $table->unsignedBigInteger('category_id')->nullable()->unsigned()->comment('Идентификатор категории (класса) товара');
             $table->foreign('category_id')->references('id')->on('categories')
                 ->onUpdate('cascade')->onDelete('set null');

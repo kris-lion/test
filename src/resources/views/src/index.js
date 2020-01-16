@@ -22,6 +22,8 @@ import { Login } from './Auth/Login'
 import { Logout } from './Auth/Logout'
 import { Product } from "./Product/Product";
 import { Category } from "./Product/Category";
+import { Role } from "./Access/Role";
+import { User } from "./Access/User";
 
 const store = createStore(
     AppReducers,
@@ -38,9 +40,10 @@ render(
                 <Alert />
                 <Router history={ history }>
                     <Switch>
-                        <Route exact component={ Authorization(['user'])(Product) } path='/products' />
-                        <Route exact component={ Authorization(['user'])(Category) } path='/product/categories' />
-                        <Route exact component={ Authorization(['user'])(Category) } path='/access' />
+                        <Route exact component={ Authorization([], ['reference'])(Product) } path='/products' />
+                        <Route exact component={ Authorization([], ['reference_category'])(Category) } path='/product/categories' />
+                        <Route exact component={ Authorization([], ['role'])(Role) } path='/access/roles' />
+                        <Route exact component={ Authorization([], ['user'])(User) } path='/access/users' />
                         <Route component={ Authorization()(Login) } path='/login' />
                         <Route component={ Authorization(['user'])(Logout) } path='/logout' />
                         <Redirect from='/' to='/products' />

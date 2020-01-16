@@ -35,7 +35,62 @@ const style = theme => ({
     }
 })
 
-const columns = [];
+const columns = [
+    {
+        id: 'standard',
+        label: 'Эталонное наименование',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'name',
+        label: 'Имя',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'volume',
+        label: 'Объем, вес и дозы',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'unit',
+        label: 'Единица измерения',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'packing',
+        label: 'Фасовка',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'quantity',
+        label: 'Количество единиц с учетом фасовки',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'generic',
+        label: 'Международного непатентованного наименования',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'form',
+        label: 'Форма',
+        align: 'center',
+        format: value => value.toLocaleString()
+    },
+    {
+        id: 'category',
+        label: 'Категория (класс)',
+        align: 'center',
+        format: value => value.toLocaleString()
+    }
+];
 
 class Product extends React.Component {
     constructor(props) {
@@ -127,7 +182,39 @@ class Product extends React.Component {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-
+                                {products.data.map(item => {
+                                    return (
+                                        <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, product: item })}}>
+                                            <TableCell align="center">
+                                                { item.standard }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.name }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.volume }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.unit ? item.unit.name : null }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.packing }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.quantity }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.generic ? item.generic.name : null }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.form ? item.form.name : null }
+                                            </TableCell>
+                                            <TableCell align="center">
+                                                { item.category ? item.category.name : null }
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
                             </TableBody>
                         </Table>
                     </TableContainer>

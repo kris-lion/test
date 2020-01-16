@@ -16,4 +16,14 @@ return [
     'failed' => 'These credentials do not match our records.',
     'throttle' => 'Too many login attempts. Please try again in :seconds seconds.',
 
+    'token' => [
+        'not' => [
+            'found' => 'User not found.',
+            'provided' => 'Token not provided.'
+        ],
+        'blacklisted' => 'The token has been blacklisted.',
+        'expired' => 'Token expired.',
+        'invalid' => 'Token invalid.'
+    ]
+
 ];
