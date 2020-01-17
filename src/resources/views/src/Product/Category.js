@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import { CategoryActions } from "./actions/category";
+import { CategoryForm } from "./components/CategoryForm";
 
 const style = theme => ({
     field: {
@@ -161,6 +162,7 @@ class Category extends React.Component {
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />
                 </Fab>
+                { dialog && <CategoryForm category = { category } open = { dialog } handleClose = {() => { this.setState({ dialog: false, category: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
             </Grid>
         )
     }

@@ -21,7 +21,7 @@ const style = theme => ({
     }
 })
 
-class UserForm extends React.Component {
+class CategoryForm extends React.Component {
     constructor(props) {
         super(props);
 
@@ -31,30 +31,25 @@ class UserForm extends React.Component {
     }
 
     render() {
-        const { handleClose, handleDelete, handleSave, open, user, roles, classes, dispatch } = this.props
+        const { handleClose, handleDelete, handleSave, open, category, classes, dispatch } = this.props
 
         return (
             <Formik
                 initialValues = {{
-                    login: user ? user.login : '',
-                    password: '',
-                    roles: user ? user.roles.map(role => { return role.id }) : []
+                    name: category ? category.name : '',
+                    group: category ? (category.group ? category.group.name : '') : ''
                 }}
                 validate = {values => {
                     const errors = {};
 
-                    if (!values.login) {
-                        errors.login = 'Введите имя пользователя';
-                    }
-
-                    if (!values.roles) {
-                        errors.roles = 'Выберит роли';
+                    if (!values.name) {
+                        errors.name = 'Введите наименование';
                     }
 
                     return errors;
                 }}
                 onSubmit = {(values, { setSubmitting }) => {
-                    handleSave(values, user ? user.id : null).then(
+                    handleSave(values, category ? category.id : null).then(
                         () => {
                             setSubmitting(false)
                             dispatch(handleClose)
@@ -80,67 +75,44 @@ class UserForm extends React.Component {
                             maxWidth="sm"
                             open={ open }
                             onClose={ handleClose }
-                            aria-labelledby="Пользователь"
+                            aria-labelledby="Категория"
                             classes={{
                                 paper: classes.dialog
                             }}
                         >
-                            <DialogTitle>{ user ? 'Редактировать' : 'Добавить' }</DialogTitle>
+                            <DialogTitle>{ category ? 'Редактировать' : 'Добавить' }</DialogTitle>
                             <DialogContent>
                                 <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
                                     <Grid item sm={8} className={classes.fullWidth}>
                                         <Field
                                             fullWidth
-                                            name="login"
+                                            name="name"
                                             type="text"
-                                            label="Имя пользователя"
+                                            label="Наименование"
                                             component={ TextField }
                                         />
                                     </Grid>
-                                    { !user &&
-                                        <Grid item sm={8} className={classes.fullWidth}>
-                                            <Field
-                                                fullWidth
-                                                type="password"
-                                                name="password"
-                                                label="Пароль"
-                                                component={ TextField }
-                                            />
-                                        </Grid>
-                                    }
                                     <Grid item sm={8} className={classes.fullWidth}>
-                                        <FormControl className={classes.fullWidth}>
-                                            <InputLabel shrink={ true } htmlFor="roles">
-                                                Роли
-                                            </InputLabel>
-                                            <Field
-                                                fullWidth
-                                                type="text"
-                                                name="roles"
-                                                label="Роли"
-                                                component={ Select }
-                                                multiple={ true }
-                                            >
-                                                {roles.map(option => (
-                                                    <MenuItem key={option.id} value={option.id}>
-                                                        {option.description}
-                                                    </MenuItem>
-                                                ))}
-                                            </Field>
-                                        </FormControl>
+                                        <Field
+                                            fullWidth
+                                            name="group"
+                                            type="text"
+                                            label="Группа"
+                                            component={ TextField }
+                                        />
                                     </Grid>
                                 </Grid>
                             </DialogContent>
                             <DialogActions>
                                 {
-                                    user
+                                    category
                                         ? (
                                             <DialogActions>
                                                 <Button
                                                     disabled={ isSubmitting || this.state.delete }
                                                     onClick={() => {
                                                         this.setState({ delete: true })
-                                                        handleDelete(user.id).then(
+                                                        handleDelete(category.id).then(
                                                             () => {
                                                                 handleClose()
                                                             }
@@ -184,11 +156,7 @@ class UserForm extends React.Component {
 }
 
 function mapStateToProps(state) {
-    const { roles } = state.role
-
-    return {
-        roles: roles.data
-    }
+    return {}
 }
 
 function mapDispatchToProps(dispatch) {
@@ -197,7 +165,7 @@ function mapDispatchToProps(dispatch) {
     }
 }
 
-UserForm = withStyles(style)(UserForm)
+CategoryForm = withStyles(style)(CategoryForm)
 
-const connectedUserForm = connect(mapStateToProps, mapDispatchToProps)(UserForm)
-export { connectedUserForm as UserForm }
+const connectedCategoryForm = connect(mapStateToProps, mapDispatchToProps)(CategoryForm)
+export { connectedCategoryForm as CategoryForm }

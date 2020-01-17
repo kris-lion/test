@@ -10,6 +10,8 @@ import {
 } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import { ProductActions } from "./actions/product";
+import { ProductForm } from "./components/ProductForm";
+import { CategoryActions } from "./actions/category";
 
 const style = theme => ({
     field: {
@@ -105,8 +107,10 @@ class Product extends React.Component {
     }
 
     componentDidMount () {
-        const { actions } = this.props
+        const { actions, category } = this.props
         const { rowsPerPage } = this.state
+
+        category.categories();
 
         return actions.products({ limit: rowsPerPage })
     }
@@ -233,6 +237,7 @@ class Product extends React.Component {
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />
                 </Fab>
+                { dialog && <ProductForm product = { product } open = { dialog } handleClose = {() => { this.setState({ dialog: false, product: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
             </Grid>
         )
     }
@@ -249,7 +254,8 @@ function mapStateToProps(state) {
 function mapDispatchToProps(dispatch) {
     return {
         dispatch,
-        actions: bindActionCreators(ProductActions, dispatch)
+        actions: bindActionCreators(ProductActions, dispatch),
+        category: bindActionCreators(CategoryActions, dispatch)
     }
 }
 

@@ -16,6 +16,47 @@ export default function user (state = { users: { data: [], meta: {}, search: nul
             return {
                 users: { data: [], meta: {}, search: null, limit: 10, page: 1 }
             }
+        case 'USER_DELETE_REQUEST':
+            return {
+                users: state.users
+            }
+        case 'USER_DELETE_SUCCESS':
+            return {
+                users: { data: state.users.data.filter(user => user.id !== action.payload), meta: state.users.meta }
+            }
+        case 'USER_DELETE_FAILURE':
+            return {
+                users: state.users
+            }
+        case 'USER_ADD_REQUEST':
+            return {
+                users: state.users
+            }
+        case 'USER_ADD_SUCCESS':
+            return {
+                users: state.users
+            }
+        case 'USER_ADD_FAILURE':
+            return {
+                users: state.users
+            }
+        case 'USER_SAVE_REQUEST':
+            return {
+                users: state.users
+            }
+        case 'USER_SAVE_SUCCESS':
+            state.users.data.forEach(function (user, key) {
+                if (user.id === action.payload.id) {
+                    state.users.data[key] = action.payload
+                }
+            })
+            return {
+                users: state.users
+            }
+        case 'USER_SAVE_FAILURE':
+            return {
+                users: state.users
+            }
         default:
             return state
     }

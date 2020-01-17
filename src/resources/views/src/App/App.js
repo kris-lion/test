@@ -121,12 +121,16 @@ class App extends React.Component {
                         <Grid container direction="row" justify="flex-start" alignItems="flex-start" className={ classes.body }>
                             <Grid item md={ 3 }>
                                 <List aria-label="contacts">
-                                    <ListItem selected={ location.pathname === '/products' } button component={ Link } to={ '/products' }>
-                                        <ListItemText primary={ 'Эталоны' } />
-                                    </ListItem>
-                                    <ListItem selected={ location.pathname === '/product/categories' } button component={ Link } to={ '/product/categories' }>
-                                        <ListItemText primary={ 'Категории эталонов' } />
-                                    </ListItem>
+                                    { AuthorizationService.permissions(account, 'reference') &&
+                                        <ListItem selected={location.pathname === '/products'} button component={Link} to={'/products'}>
+                                            <ListItemText primary={'Эталоны'}/>
+                                        </ListItem>
+                                    }
+                                    { AuthorizationService.permissions(account, 'reference_category') &&
+                                        <ListItem selected={location.pathname === '/product/categories'} button component={Link} to={'/product/categories'}>
+                                            <ListItemText primary={'Категории эталонов'}/>
+                                        </ListItem>
+                                    }
                                     { access &&
                                         <ListItem button onClick={handleClick}>
                                             <ListItemText primary={'Управление доступом'}/>
