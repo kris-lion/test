@@ -4,8 +4,8 @@ namespace App\Console\Commands\Unloading;
 
 use App\Models\Dosage\Form;
 use App\Models\Generic;
-use App\Models\Product;
-use App\Models\Product\Category;
+use App\Models\Item;
+use App\Models\Item\Category;
 use App\Models\Unit;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
@@ -31,7 +31,7 @@ class File extends Command
                 echo "{$i}\n";
                 $row = array_map('trim', $row);
 
-                $product = Product::firstOrCreate([
+                $product = Item::firstOrCreate([
                     'standard' => $row[0]
                 ]);
 
@@ -80,7 +80,7 @@ class File extends Command
                 echo "{$i}\n";
                 $row = array_map('trim', $row);
 
-                $product = Product::firstOrCreate([
+                $product = Item::firstOrCreate([
                     'standard' => $row[3]
                 ]);
 
@@ -120,7 +120,7 @@ class File extends Command
                 echo "{$i}\n";
                 $row = array_map('trim', $row);
 
-                $product = Product::firstOrCreate([
+                $product = Item::firstOrCreate([
                     'standard' => $row[0]
                 ]);
 

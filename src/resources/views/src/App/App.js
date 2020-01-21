@@ -122,13 +122,13 @@ class App extends React.Component {
                             <Grid item md={ 3 }>
                                 <List aria-label="contacts">
                                     { AuthorizationService.permissions(account, 'reference') &&
-                                        <ListItem selected={location.pathname === '/products'} button component={Link} to={'/products'}>
+                                        <ListItem selected={location.pathname === '/items'} button component={Link} to={'/items'}>
                                             <ListItemText primary={'Эталоны'}/>
                                         </ListItem>
                                     }
-                                    { AuthorizationService.permissions(account, 'reference_category') &&
-                                        <ListItem selected={location.pathname === '/product/categories'} button component={Link} to={'/product/categories'}>
-                                            <ListItemText primary={'Категории эталонов'}/>
+                                    { AuthorizationService.permissions(account, 'category') &&
+                                        <ListItem selected={location.pathname === '/categories'} button component={Link} to={'/categories'}>
+                                            <ListItemText primary={'Категории'}/>
                                         </ListItem>
                                     }
                                     { access &&

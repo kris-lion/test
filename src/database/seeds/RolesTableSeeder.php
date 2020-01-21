@@ -32,6 +32,6 @@ class RolesTableSeeder extends Seeder
             'description' => 'Контент менеджер'
         ]);
 
-        $manager->permissions()->attach($permissions->whereIn('name', ['reference_category', 'reference'])->pluck('id')->toArray());
+        $manager->permissions()->attach($permissions->whereIn('name', ['category', 'reference'])->pluck('id')->toArray());
     }
 }
