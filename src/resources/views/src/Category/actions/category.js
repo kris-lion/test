@@ -1,7 +1,11 @@
 import { CategoryService } from '../services/category'
+import {UserService} from "../../Access/services/user";
 
 export const CategoryActions = {
-    categories
+    categories,
+    add,
+    save,
+    remove
 }
 
 function categories (params = { }) {
@@ -20,6 +24,66 @@ function categories (params = { }) {
                     dispatch({ type: 'CATEGORIES_FAILURE' })
                     dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     dispatch({ type: 'FILLING', payload: false })
+                    reject()
+                }
+            )
+    })
+}
+
+function add (values) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'CATEGORY_ADD_REQUEST' })
+
+        CategoryService.add(values)
+            .then(
+                category => {
+                    dispatch({ type: 'CATEGORY_ADD_SUCCESS', payload: category })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Категория добавлена.' })
+                    resolve()
+                },
+                error => {
+                    dispatch({ type: 'CATEGORY_ADD_FAILURE' })
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
+                    reject()
+                }
+            )
+    })
+}
+
+function save (id, values) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'CATEGORY_SAVE_REQUEST' })
+
+        CategoryService.save(id, values)
+            .then(
+                category => {
+                    dispatch({ type: 'CATEGORY_SAVE_SUCCESS', payload: category })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Категория изменена.' })
+                    resolve()
+                },
+                error => {
+                    dispatch({ type: 'CATEGORY_SAVE_FAILURE' })
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
+                    reject()
+                }
+            )
+    })
+}
+
+function remove (id) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'CATEGORY_DELETE_REQUEST' })
+
+        CategoryService.remove(id)
+            .then(
+                () => {
+                    dispatch({ type: 'CATEGORY_DELETE_SUCCESS', payload: id })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Категория удалена.' })
+                    resolve()
+                },
+                error => {
+                    dispatch({ type: 'CATEGORY_DELETE_FAILURE' })
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     reject()
                 }
             )

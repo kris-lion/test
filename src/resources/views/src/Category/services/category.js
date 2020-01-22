@@ -1,7 +1,10 @@
 import { HttpService } from '../../App/services/http'
 
 export const CategoryService = {
-    categories
+    categories,
+    add,
+    save,
+    remove
 }
 
 function categories (params = null) {
@@ -11,6 +14,41 @@ function categories (params = null) {
     }
 
     return HttpService.http(`/categories`, options, true)
+        .then(response => {
+            return response
+        })
+}
+
+function add (values) {
+    const options = {
+        method: 'POST',
+        body: JSON.stringify(values)
+    }
+
+    return HttpService.http(`/category`, options, true)
+        .then(response => {
+            return response.data
+        })
+}
+
+function save (id, values) {
+    const options = {
+        method: 'PUT',
+        body: JSON.stringify(values)
+    }
+
+    return HttpService.http(`/category/${id}`, options, true)
+        .then(response => {
+            return response.data
+        })
+}
+
+function remove (id) {
+    const options = {
+        method: 'DELETE'
+    }
+
+    return HttpService.http(`/category/${id}`, options, true)
         .then(response => {
             return response
         })

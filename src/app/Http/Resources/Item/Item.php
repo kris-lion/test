@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Item;
 
+use App\Http\Resources\Category\Attribute\Value as ValueResource;
 use App\Http\Resources\Category\Category;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -12,7 +13,8 @@ class Item extends JsonResource
         return [
             'id'       => $this->id,
             'name'     => $this->name,
-            'category' => new Category($this->whenLoaded('category'))
+            'category' => new Category($this->whenLoaded('category')),
+            'values'   => ValueResource::collection($this->whenLoaded('values')),
         ];
     }
 }

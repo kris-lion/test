@@ -49,7 +49,14 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::group(['middleware' => ['permission:category']], function () {
             Route::get('/categories', 'Category\CategoryController@get');
-            Route::get('/category/attribute/types', 'Category\Attribute\TypeController@get');
+
+            Route::namespace('Category')->prefix('/category')->group(function () {
+                Route::post('/', 'CategoryController@post');
+                Route::put('/{id}', 'CategoryController@put');
+                Route::delete('/{id}', 'CategoryController@delete');
+
+                Route::get('/attribute/types', 'Attribute\TypeController@get');
+            });
         });
     });
 });

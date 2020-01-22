@@ -30,15 +30,40 @@ class ItemForm extends React.Component {
     }
 
     render() {
-        const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
+        const { handleClose, handleDelete, handleSave, open, item, category, categories, classes, dispatch } = this.props
+
+        let values = {}
+
+        if (item) {
+            item.category.attributes.forEach((attribute) => {
+                values[attribute.name] = ''
+            })
+
+            item.values.map(value => {
+                values[value.attribute.name] = value.value
+            })
+        }
 
         return (
-            <Formik
-                initialValues = {{
 
-                }}
+            <Formik
+                initialValues = {{...{
+                    category: item ? item.category.id : (category ? category.id : 0)
+                }, ...values}}
                 validate = {values => {
                     const errors = {};
+
+                    if (!values.category) {
+                        errors.category = 'Выберите категорию'
+                    }
+
+                    if (item) {
+                        item.category.attributes.forEach((attribute) => {
+                            if (!values[attribute.id] && !!attribute.required) {
+                                errors[attribute.id] = `Введите ${attribute.name.toLowerCase()}`
+                            }
+                        })
+                    }
 
                     return errors;
                 }}
@@ -77,7 +102,27 @@ class ItemForm extends React.Component {
                             <DialogTitle>{ item ? 'Редактировать' : 'Добавить' }</DialogTitle>
                             <DialogContent>
                                 <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
-
+                                    <Grid item sm={8} className={classes.fullWidth}>
+                                        <Field
+                                            fullWidth
+                                            type="text"
+                                            name="category"
+                                            label="Тип"
+                                            select
+                                            variant="standard"
+                                            disabled={ !!item }
+                                            component={ TextField }
+                                            InputLabelProps={{
+                                                shrink: true,
+                                            }}
+                                        >
+                                            {categories.map(option => (
+                                                <MenuItem key={option.id} value={option.id}>
+                                                    {option.name}
+                                                </MenuItem>
+                                            ))}
+                                        </Field>
+                                    </Grid>
                                 </Grid>
                             </DialogContent>
                             <DialogActions>

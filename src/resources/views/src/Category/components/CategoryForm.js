@@ -39,7 +39,7 @@ class CategoryForm extends React.Component {
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes : []
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required } }) : []
                 }}
                 validate = {values => {
                     const errors = {};
@@ -122,7 +122,7 @@ class CategoryForm extends React.Component {
                                             <Grid item sm={8} className={classes.fullWidth}>
                                                 <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
                                                     {values.attributes && values.attributes.length > 0 && (
-                                                        values.attributes.map((friend, index) => (
+                                                        values.attributes.map((attribute, index) => (
                                                             <Grid item key={index}  className={classes.fullWidth}>
                                                                 <Card className={classes.fullWidth}>
                                                                     <CardContent>
@@ -157,6 +157,7 @@ class CategoryForm extends React.Component {
                                                                                         label="Тип"
                                                                                         select
                                                                                         variant="standard"
+                                                                                        disabled={ attribute.hasOwnProperty('id') }
                                                                                         component={ TextField }
                                                                                         InputLabelProps={{
                                                                                             shrink: true,

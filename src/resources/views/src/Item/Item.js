@@ -6,8 +6,9 @@ import { withStyles } from '@material-ui/core/styles'
 import {
     Grid,
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
-    Fab
+    Fab, Select, MenuItem
 } from '@material-ui/core'
+import { Check, DeleteSweep } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import { ItemActions } from "./actions/item";
 import { ItemForm } from "./components/ItemForm";
@@ -18,7 +19,7 @@ const style = theme => ({
         'height': '100%'
     },
     data: {
-        'height': 'calc(100% - 52px)',
+        'height': 'calc(100% - 84px)',
         'width': '100%'
     },
     item: {
@@ -37,82 +38,24 @@ const style = theme => ({
     }
 })
 
-const columns = [
-    {
-        id: 'standard',
-        label: 'Эталонное наименование',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'name',
-        label: 'Имя',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'volume',
-        label: 'Объем, вес и дозы',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'unit',
-        label: 'Единица измерения',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'packing',
-        label: 'Фасовка',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'quantity',
-        label: 'Количество единиц с учетом фасовки',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'generic',
-        label: 'Международного непатентованного наименования',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'form',
-        label: 'Форма',
-        align: 'center',
-        format: value => value.toLocaleString()
-    },
-    {
-        id: 'category',
-        label: 'Категория (класс)',
-        align: 'center',
-        format: value => value.toLocaleString()
-    }
-];
-
 class Item extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
             item: null,
+            category: {},
             dialog: false,
             page: 0,
-            rowsPerPage: 10
+            rowsPerPage: 10,
+            columns: []
         };
     }
 
     componentDidMount () {
-        const { actions, category } = this.props
-        const { rowsPerPage } = this.state
+        const { category } = this.props
 
         category.categories();
-
-        return actions.items({ limit: rowsPerPage })
     }
 
     componentWillUnmount() {
@@ -122,8 +65,8 @@ class Item extends React.Component {
     }
 
     render() {
-        const { items, classes } = this.props
-        const { item, dialog, page, rowsPerPage } = this.state
+        const { items, categories, classes } = this.props
+        const { item, category, dialog, page, rowsPerPage, columns } = this.state
 
         const handleDelete = (id) => {
             const { actions } = this.props
@@ -149,6 +92,31 @@ class Item extends React.Component {
             }
         }
 
+        const handleChange = event => {
+            const { actions } = this.props
+
+            const category = event.target.value
+
+            this.setState({
+                category: category
+            })
+
+            return actions.items({ page: 1, category: category.id }).then(() => {
+                if (category.hasOwnProperty('attributes')) {
+                    this.setState({
+                        columns: category.attributes.map((attribute) => {
+                            return {
+                                id: attribute.id,
+                                label: attribute.name,
+                                align: 'center',
+                                format: value => value.toLocaleString()
+                            }
+                        })
+                    })
+                }
+            })
+        };
+
         const handleChangePage = (event, newPage) => {
             const { actions } = this.props
 
@@ -167,8 +135,39 @@ class Item extends React.Component {
             return actions.items({ page: 1, limit: +event.target.value})
         };
 
+        const getValue = (values, id) => {
+            const value = values.find((value) => { return (value.attribute.id === id) ? value : null })
+
+            if (value) {
+                if (value.attribute.type.key === 'boolean') {
+                    return <Check />
+                }
+                return value.value
+            }
+
+            return null
+        }
+
         return (
             <Grid container direction="column" justify="space-between" alignItems="center" className={classes.field}>
+                <Grid item className={classes.item}>
+                    <Grid container direction="row" justify="flex-end" alignItems="center">
+                        <Grid item sm={3}>
+                            <Select
+                                fullWidth
+                                id="category"
+                                value={ category }
+                                onChange={ handleChange }
+                            >
+                                {categories.data.map(option => (
+                                    <MenuItem key={ option.id } value={ option }>
+                                        {option.name}
+                                    </MenuItem>
+                                ))}
+                            </Select>
+                        </Grid>
+                    </Grid>
+                </Grid>
                 <Grid item className={classes.data}>
                     <TableContainer className={classes.table}>
                         <Table stickyHeader aria-label="sticky table">
@@ -189,33 +188,16 @@ class Item extends React.Component {
                                 {items.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, item: item })}}>
-                                            <TableCell align="center">
-                                                { item.standard }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.name }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.volume }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.unit ? item.unit.name : null }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.packing }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.quantity }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.generic ? item.generic.name : null }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.form ? item.form.name : null }
-                                            </TableCell>
-                                            <TableCell align="center">
-                                                { item.category ? item.category.name : null }
-                                            </TableCell>
+                                            {columns.map(column => (
+                                                <TableCell
+                                                    key={ column.id }
+                                                    align="center"
+                                                >
+                                                    {
+                                                        getValue(item.values, column.id)
+                                                    }
+                                                </TableCell>
+                                            ))}
                                         </TableRow>
                                     );
                                 })}
@@ -237,7 +219,7 @@ class Item extends React.Component {
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />
                 </Fab>
-                { dialog && <ItemForm item = { item } open = { dialog } handleClose = {() => { this.setState({ dialog: false, item: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
+                { dialog && <ItemForm item = { item } category = { category } open = { dialog } handleClose = {() => { this.setState({ dialog: false, item: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
             </Grid>
         )
     }
@@ -245,9 +227,10 @@ class Item extends React.Component {
 
 function mapStateToProps(state) {
     const { items } = state.item
+    const { categories } = state.category
 
     return {
-        items
+        items, categories
     }
 }
 

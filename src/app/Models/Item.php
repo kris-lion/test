@@ -14,7 +14,7 @@ class Item extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'category_id'
+        'id', 'name', 'category_id'
     ];
 
     public function category()

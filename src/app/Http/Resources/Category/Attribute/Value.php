@@ -3,7 +3,6 @@
 namespace App\Http\Resources\Category\Attribute;
 
 use App\Http\Resources\Category\Attribute;
-use App\Http\Resources\Item\Item;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class Value extends JsonResource
@@ -12,7 +11,7 @@ class Value extends JsonResource
     {
         return [
             'id'        => $this->id,
-            'name'      => $this->name,
+            'value'     => $this->value,
             'attribute' => new Attribute($this->whenLoaded('attribute'))
         ];
     }

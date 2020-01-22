@@ -12,7 +12,7 @@ function items (params = { }) {
         ItemService.items(params)
             .then(
                 response => {
-                    dispatch({ type: 'ITEMS_SUCCESS', payload: { data: response.data, meta: response.meta, search: params.search, limit: params.limit ? params.limit : 10, page: params.page ? params.page : 1 } })
+                    dispatch({ type: 'ITEMS_SUCCESS', payload: { data: response.data, meta: response.meta, category: params.category, limit: params.limit ? params.limit : 10, page: params.page ? params.page : 1 } })
                     dispatch({ type: 'FILLING', payload: false })
                     resolve()
                 },

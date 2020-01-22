@@ -23,7 +23,11 @@ class ItemController extends Controller
         try {
             $items = Item::query();
 
-            $items = $items->with('category.attributes.type', 'values.attribute')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
+            if ($request->has('category')) {
+                $items->where(['category_id' => $request->get('category')]);
+            }
+
+            $items = $items->with('values.attribute.type', 'category.attributes.type')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
 
             return ItemResource::collection($items);
         } catch (\Exception $e) {
