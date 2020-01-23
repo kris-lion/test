@@ -45,6 +45,12 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::group(['middleware' => ['permission:reference']], function () {
             Route::get('/items', 'Item\ItemController@get');
+
+            Route::namespace('Item')->prefix('/item')->group(function () {
+                Route::post('/', 'ItemController@post');
+                Route::put('/{id}', 'ItemController@put');
+                Route::delete('/{id}', 'ItemController@delete');
+            });
         });
 
         Route::group(['middleware' => ['permission:category']], function () {

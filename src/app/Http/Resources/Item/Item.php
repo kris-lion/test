@@ -12,7 +12,6 @@ class Item extends JsonResource
     {
         return [
             'id'       => $this->id,
-            'name'     => $this->name,
             'category' => new Category($this->whenLoaded('category')),
             'values'   => ValueResource::collection($this->whenLoaded('values')),
         ];

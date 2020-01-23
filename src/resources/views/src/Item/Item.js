@@ -70,23 +70,27 @@ class Item extends React.Component {
 
         const handleDelete = (id) => {
             const { actions } = this.props
+            const { category } = this.state
 
             return actions.remove(id).then(
                 () => {
-                    return actions.items({ page: page + 1, limit: rowsPerPage })
+                    return actions.items({ page: page + 1, limit: rowsPerPage, category: category.id })
                 }
             )
         }
 
         const handleSave = (values, id = null) => {
             const { actions } = this.props
+            const { category } = this.state
 
             if (id) {
                 return actions.save(id, values)
             } else {
                 return actions.add(values).then(
                     () => {
-                        return actions.items({ page: page + 1, limit: rowsPerPage })
+                        if (category) {
+                            return actions.items({page: page + 1, limit: rowsPerPage, category: category.id})
+                        }
                     }
                 )
             }
@@ -216,10 +220,14 @@ class Item extends React.Component {
                         onChangeRowsPerPage={ handleChangeRowsPerPage }
                     />
                 </Grid>
-                <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
-                    <AddIcon />
-                </Fab>
-                { dialog && <ItemForm item = { item } category = { category } open = { dialog } handleClose = {() => { this.setState({ dialog: false, item: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
+                { !!Object.keys(category).length &&
+                    <Fab size="medium" color="primary" aria-label="Добавить" className={classes.fab} onClick={() => {this.setState({dialog: true}) }}>
+                        <AddIcon/>
+                    </Fab>
+                }
+                { dialog &&
+                    <ItemForm item = { item } category = { category } open = { dialog } handleClose = {() => { this.setState({ dialog: false, item: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } />
+                }
             </Grid>
         )
     }

@@ -5,10 +5,10 @@ import { Formik, Field, Form } from 'formik'
 import { withStyles } from '@material-ui/core/styles'
 import {
     Button, CircularProgress, MenuItem,
-    Dialog, DialogTitle, DialogContent, DialogActions, Grid
+    Dialog, DialogTitle, DialogContent, DialogActions, Grid, FormControlLabel
 } from '@material-ui/core'
 import {
-    TextField, Select,
+    TextField, Select, Switch,
 } from 'formik-material-ui';
 
 const style = theme => ({
@@ -20,36 +20,149 @@ const style = theme => ({
     }
 })
 
+
+class FieldString extends React.Component {
+    render () {
+        const { id, label } = this.props
+
+        return (
+            <Field
+                fullWidth
+                name={ `attributes.${id}` }
+                type="text"
+                label={ `${label}` }
+                component={ TextField }
+            />
+        )
+    }
+}
+
+class FieldInteger extends React.Component {
+    render () {
+        const { id, label } = this.props
+
+        return (
+            <Field
+                fullWidth
+                name={ `attributes.${id}` }
+                type="number"
+                label={ `${label}` }
+                inputProps={{ step: 1 }}
+                component={ TextField }
+            />
+        )
+    }
+}
+
+class FieldDouble extends React.Component {
+    render () {
+        const { id, label } = this.props
+
+        return (
+            <Field
+                fullWidth
+                name={ `attributes.${id}` }
+                type="number"
+                label={ `${label}` }
+                inputProps={{ step: 0.00001 }}
+                component={ TextField }
+            />
+        )
+    }
+}
+
+class FieldBoolean extends React.Component {
+    render () {
+        const { id, label } = this.props
+
+        return (
+            <FormControlLabel
+                control={
+                    <Field
+                        name={ `attributes.${id}` }
+                        label={ label }
+                        component={ Switch }
+                    />
+                }
+                label={ label }
+            />
+        )
+    }
+}
+
 class ItemForm extends React.Component {
     constructor(props) {
         super(props);
 
+        const { item, category } = props
+
+        let attributes = []
+        let values = {}
+
+        const current = item ? item.category : category
+
+        if (Object.keys(current).length) {
+            current.attributes.forEach((attribute) => {
+                switch(attribute.type.key) {
+                    case 'string':
+                        attributes.push(<FieldString id={ attribute.id } label={ attribute.name }/>)
+                        values[`${attribute.id}`] = ''
+                        break
+                    case 'integer':
+                        attributes.push(<FieldInteger id={ attribute.id } label={ attribute.name }/>)
+                        values[`${attribute.id}`] = 0
+                        break
+                    case 'double':
+                        attributes.push(<FieldDouble id={ attribute.id } label={ attribute.name }/>)
+                        values[`${attribute.id}`] = 0.00000
+                        break
+                    case 'boolean':
+                        attributes.push(<FieldBoolean id={ attribute.id } label={ attribute.name }/>)
+                        values[`${attribute.id}`] = false
+                        break
+                    case 'generic':
+                        break
+                }
+            })
+
+            if (item) {
+                item.values.map(value => {
+                    switch(value.attribute.type.key) {
+                        case 'boolean':
+                            values[`${value.attribute.id}`] = !!value.value
+                            break
+                        case 'generic':
+                            break
+                        default:
+                            values[`${value.attribute.id}`] = value.value
+                    }
+                })
+            }
+        }
+
         this.state = {
-            delete: false
+            delete: false,
+            category: current,
+            attributes: attributes,
+            values: values
         };
     }
 
+    componentWillUnmount() {
+        this.setState({ category: {}, attributes: [], values: {} })
+    }
+
     render() {
-        const { handleClose, handleDelete, handleSave, open, item, category, categories, classes, dispatch } = this.props
-
-        let values = {}
-
-        if (item) {
-            item.category.attributes.forEach((attribute) => {
-                values[attribute.name] = ''
-            })
-
-            item.values.map(value => {
-                values[value.attribute.name] = value.value
-            })
-        }
+        const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
+        const { category } = this.state
 
         return (
 
             <Formik
+                enableReinitialize
                 initialValues = {{...{
-                    category: item ? item.category.id : (category ? category.id : 0)
-                }, ...values}}
+                    category: Object.keys(category).length ? category.id : 0
+                }, ...{ attributes: this.state.values }}}
                 validate = {values => {
                     const errors = {};
 
@@ -57,17 +170,25 @@ class ItemForm extends React.Component {
                         errors.category = 'Выберите категорию'
                     }
 
-                    if (item) {
-                        item.category.attributes.forEach((attribute) => {
-                            if (!values[attribute.id] && !!attribute.required) {
-                                errors[attribute.id] = `Введите ${attribute.name.toLowerCase()}`
+                    errors.attributes = {}
+
+                    if (Object.keys(category).length) {
+                        category.attributes.forEach((attribute) => {
+                            if ((attribute.type.key !== 'boolean') && !values.attributes[`${attribute.id}`] && !!attribute.required) {
+                                errors.attributes[`${attribute.id}`] = `Введите ${attribute.name.toLowerCase()}`
                             }
                         })
+                    }
+
+                    if (!Object.keys(errors.attributes).length) {
+                        delete errors.attributes
                     }
 
                     return errors;
                 }}
                 onSubmit = {(values, { setSubmitting }) => {
+                    console.log(values)
+
                     handleSave(values, item ? item.id : null).then(
                         () => {
                             setSubmitting(false)
@@ -85,7 +206,9 @@ class ItemForm extends React.Component {
                       touched,
                       handleChange,
                       handleBlur,
+                      handleReset,
                       handleSubmit,
+                      setFieldValue,
                       isSubmitting
                   }) => (
                     <Form>
@@ -110,7 +233,7 @@ class ItemForm extends React.Component {
                                             label="Тип"
                                             select
                                             variant="standard"
-                                            disabled={ !!item }
+                                            disabled={ !!Object.keys(category).length }
                                             component={ TextField }
                                             InputLabelProps={{
                                                 shrink: true,
@@ -123,6 +246,13 @@ class ItemForm extends React.Component {
                                             ))}
                                         </Field>
                                     </Grid>
+                                    {
+                                        this.state.attributes.map((attribute, index) => (
+                                            <Grid item sm={8} key={index} className={classes.fullWidth}>
+                                                { attribute }
+                                            </Grid>
+                                        ))
+                                    }
                                 </Grid>
                             </DialogContent>
                             <DialogActions>

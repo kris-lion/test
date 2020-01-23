@@ -1,7 +1,11 @@
 import { ItemService } from '../services/item'
+import {CategoryService} from "../../Category/services/category";
 
 export const ItemActions = {
-    items
+    items,
+    add,
+    save,
+    remove
 }
 
 function items (params = { }) {
@@ -20,6 +24,67 @@ function items (params = { }) {
                     dispatch({ type: 'ITEMS_FAILURE' })
                     dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     dispatch({ type: 'FILLING', payload: false })
+                    reject()
+                }
+            )
+    })
+}
+
+
+function add (values) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'ITEM_ADD_REQUEST' })
+
+        ItemService.add(values)
+            .then(
+                item => {
+                    dispatch({ type: 'ITEM_ADD_SUCCESS', payload: item })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон добавлен.' })
+                    resolve()
+                },
+                error => {
+                    dispatch({ type: 'ITEM_ADD_FAILURE' })
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
+                    reject()
+                }
+            )
+    })
+}
+
+function save (id, values) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'ITEM_SAVE_REQUEST' })
+
+        ItemService.save(id, values)
+            .then(
+                item => {
+                    dispatch({ type: 'ITEM_SAVE_SUCCESS', payload: item })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон изменён.' })
+                    resolve()
+                },
+                error => {
+                    dispatch({ type: 'ITEM_SAVE_FAILURE' })
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
+                    reject()
+                }
+            )
+    })
+}
+
+function remove (id) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'ITEM_DELETE_REQUEST' })
+
+        ItemService.remove(id)
+            .then(
+                () => {
+                    dispatch({ type: 'ITEM_DELETE_SUCCESS', payload: id })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон удалён.' })
+                    resolve()
+                },
+                error => {
+                    dispatch({ type: 'ITEM_DELETE_FAILURE' })
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     reject()
                 }
             )
