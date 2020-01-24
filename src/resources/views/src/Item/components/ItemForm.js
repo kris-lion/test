@@ -68,7 +68,7 @@ class ItemForm extends React.Component {
                 item.values.forEach(value => {
                     switch(value.attribute.type.key) {
                         case 'generic':
-                            values[`${value.attribute.id}`] = JSON.parse(value.value)
+                            values[`${value.attribute.id}`] = JSON.parse(value.value.replace(new RegExp('null', 'g'), '""'))
                             break
                         case 'boolean':
                             values[`${value.attribute.id}`] = !!value.value
