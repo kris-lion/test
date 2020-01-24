@@ -2,7 +2,7 @@
 
 namespace App\Http\Resources;
 
-use App\Http\Resources\Auth\Role;
+use App\Http\Resources\Auth\Role as RoleResource;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class User extends JsonResource
@@ -12,7 +12,7 @@ class User extends JsonResource
         return [
             'id'    => $this->id,
             'login' => $this->login,
-            'roles' => Role::collection($this->whenLoaded('roles')),
+            'roles' => RoleResource::collection($this->whenLoaded('roles')),
         ];
     }
 }

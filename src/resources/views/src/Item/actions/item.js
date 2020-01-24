@@ -1,26 +1,26 @@
-import { UserService } from '../services/user'
+import { ItemService } from '../services/item'
 
-export const UserActions = {
-    users,
+export const ItemActions = {
+    items,
     add,
     save,
     remove
 }
 
-function users (params = { }) {
+function items (params = { }) {
     return dispatch => new Promise((resolve, reject) => {
         dispatch({ type: 'FILLING', payload: true })
-        dispatch({ type: 'USERS_REQUEST' })
+        dispatch({ type: 'ITEMS_REQUEST' })
 
-        UserService.users(params)
+        ItemService.items(params)
             .then(
                 response => {
-                    dispatch({ type: 'USERS_SUCCESS', payload: { data: response.data, meta: response.meta, search: params.search, limit: params.limit ? params.limit : 10, page: params.page ? params.page : 1 } })
+                    dispatch({ type: 'ITEMS_SUCCESS', payload: { data: response.data, meta: response.meta, category: params.category, limit: params.limit ? params.limit : 10, page: params.page ? params.page : 1 } })
                     dispatch({ type: 'FILLING', payload: false })
                     resolve()
                 },
                 error => {
-                    dispatch({ type: 'USERS_FAILURE' })
+                    dispatch({ type: 'ITEMS_FAILURE' })
                     dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     dispatch({ type: 'FILLING', payload: false })
                     reject()
@@ -29,19 +29,20 @@ function users (params = { }) {
     })
 }
 
+
 function add (values) {
     return dispatch => new Promise((resolve, reject) => {
-        dispatch({ type: 'USER_ADD_REQUEST' })
+        dispatch({ type: 'ITEM_ADD_REQUEST' })
 
-        UserService.add(values)
+        ItemService.add(values)
             .then(
-                territory => {
-                    dispatch({ type: 'USER_ADD_SUCCESS', payload: territory })
-                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Пользователь добавлен.' })
+                item => {
+                    dispatch({ type: 'ITEM_ADD_SUCCESS', payload: item })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон добавлен.' })
                     resolve()
                 },
                 error => {
-                    dispatch({ type: 'USER_ADD_FAILURE' })
+                    dispatch({ type: 'ITEM_ADD_FAILURE' })
                     dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     reject()
                 }
@@ -51,17 +52,17 @@ function add (values) {
 
 function save (id, values) {
     return dispatch => new Promise((resolve, reject) => {
-        dispatch({ type: 'USER_SAVE_REQUEST' })
+        dispatch({ type: 'ITEM_SAVE_REQUEST' })
 
-        UserService.save(id, values)
+        ItemService.save(id, values)
             .then(
-                territory => {
-                    dispatch({ type: 'USER_SAVE_SUCCESS', payload: territory })
-                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Пользователь изменен.' })
+                item => {
+                    dispatch({ type: 'ITEM_SAVE_SUCCESS', payload: item })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон изменён.' })
                     resolve()
                 },
                 error => {
-                    dispatch({ type: 'USER_SAVE_FAILURE' })
+                    dispatch({ type: 'ITEM_SAVE_FAILURE' })
                     dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     reject()
                 }
@@ -71,17 +72,17 @@ function save (id, values) {
 
 function remove (id) {
     return dispatch => new Promise((resolve, reject) => {
-        dispatch({ type: 'USER_DELETE_REQUEST' })
+        dispatch({ type: 'ITEM_DELETE_REQUEST' })
 
-        UserService.remove(id)
+        ItemService.remove(id)
             .then(
                 () => {
-                    dispatch({ type: 'USER_DELETE_SUCCESS', payload: id })
-                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Пользователь удален.' })
+                    dispatch({ type: 'ITEM_DELETE_SUCCESS', payload: id })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон удалён.' })
                     resolve()
                 },
                 error => {
-                    dispatch({ type: 'USER_DELETE_FAILURE' })
+                    dispatch({ type: 'ITEM_DELETE_FAILURE' })
                     dispatch({ type: 'ALERT_ERROR', payload: error.message })
                     reject()
                 }

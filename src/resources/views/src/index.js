@@ -20,8 +20,8 @@ import { Loading } from './App/Loading'
 import { Alert } from './App/Alert'
 import { Login } from './Auth/Login'
 import { Logout } from './Auth/Logout'
-import { Product } from "./Product/Product";
-import { Category } from "./Product/Category";
+import { Item } from "./Item/Item";
+import { Category } from "./Category/Category";
 import { Role } from "./Access/Role";
 import { User } from "./Access/User";
 
@@ -40,13 +40,13 @@ render(
                 <Alert />
                 <Router history={ history }>
                     <Switch>
-                        <Route exact component={ Authorization([], ['reference'])(Product) } path='/products' />
-                        <Route exact component={ Authorization([], ['reference_category'])(Category) } path='/product/categories' />
+                        <Route exact component={ Authorization([], ['reference'])(Item) } path='/items' />
+                        <Route exact component={ Authorization([], ['category'])(Category) } path='/categories' />
                         <Route exact component={ Authorization([], ['role'])(Role) } path='/access/roles' />
                         <Route exact component={ Authorization([], ['user'])(User) } path='/access/users' />
                         <Route component={ Authorization()(Login) } path='/login' />
                         <Route component={ Authorization(['user'])(Logout) } path='/logout' />
-                        <Redirect from='/' to='/products' />
+                        <Redirect from='/' to='/items' />
                         <Route component={ NotFound } />
                     </Switch>
                 </Router>

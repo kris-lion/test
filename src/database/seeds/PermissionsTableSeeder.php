@@ -23,7 +23,7 @@ class PermissionsTableSeeder extends Seeder
         ]);
 
         Permission::create([
-            'name'        => 'reference_category',
+            'name'        => 'category',
             'description' => 'Управление категориями эталонов'
         ]);
 

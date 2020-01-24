@@ -44,11 +44,25 @@ Route::group(['middleware' => ['api']], function () {
         });
 
         Route::group(['middleware' => ['permission:reference']], function () {
-            Route::get('/products', 'Product\ProductController@get');
+            Route::get('/items', 'Item\ItemController@get');
+
+            Route::namespace('Item')->prefix('/item')->group(function () {
+                Route::post('/', 'ItemController@post');
+                Route::put('/{id}', 'ItemController@put');
+                Route::delete('/{id}', 'ItemController@delete');
+            });
         });
 
-        Route::group(['middleware' => ['permission:reference_category']], function () {
-            Route::get('/product/categories', 'Product\CategoryController@get');
+        Route::group(['middleware' => ['permission:category']], function () {
+            Route::get('/categories', 'Category\CategoryController@get');
+
+            Route::namespace('Category')->prefix('/category')->group(function () {
+                Route::post('/', 'CategoryController@post');
+                Route::put('/{id}', 'CategoryController@put');
+                Route::delete('/{id}', 'CategoryController@delete');
+
+                Route::get('/attribute/types', 'Attribute\TypeController@get');
+            });
         });
     });
 });

@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models\Category;
+
+use App\Models\Item;
+use Illuminate\Database\Eloquent\Model;
+
+class Category extends Model
+{
+    protected $table = 'categories';
+
+    /**
+     * @var array
+     */
+    protected $fillable = [
+        'name'
+    ];
+
+    public $timestamps = false;
+
+    public function attributes()
+    {
+        return $this->hasMany(Attribute::class, 'category_id', 'id');
+    }
+
+    public function items()
+    {
+        return $this->hasMany(Item::class, 'category_id', 'id');
+    }
+}

@@ -4,8 +4,9 @@ import application from './application'
 import alert from './alert'
 import authentication from  '../../Auth/reducers/authentication'
 import account from '../../Account/reducers/account'
-import product from '../../Product/reducers/product'
-import category from '../../Product/reducers/category'
+import item from '../../Item/reducers/item'
+import category from '../../Category/reducers/category'
+import attribute_type from '../../Category/reducers/Attribute/type'
 import role from '../../Access/reducers/role'
 import permission from '../../Access/reducers/permission'
 import user from '../../Access/reducers/user'
@@ -15,8 +16,9 @@ const AppReducers = combineReducers({
     alert,
     authentication,
     account,
-    product,
+    item,
     category,
+    attribute_type,
     role,
     permission,
     user
