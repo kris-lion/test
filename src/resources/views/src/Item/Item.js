@@ -8,7 +8,7 @@ import {
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
     Fab, Select, MenuItem
 } from '@material-ui/core'
-import { Check, DeleteSweep } from '@material-ui/icons';
+import { Check } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import { ItemActions } from "./actions/item";
 import { ItemForm } from "./components/ItemForm";
@@ -143,10 +143,17 @@ class Item extends React.Component {
             const value = values.find((value) => { return (value.attribute.id === id) ? value : null })
 
             if (value) {
-                if (value.attribute.type.key === 'boolean') {
-                    return <Check />
+                switch (value.attribute.type.key) {
+                    case 'generic':
+                        return JSON.parse(value.value).map(el => {
+                            return el.name
+                        }).join(', ')
+                        break
+                    case 'boolean':
+                        return <Check />
+                    default:
+                        return value.value
                 }
-                return value.value
             }
 
             return null

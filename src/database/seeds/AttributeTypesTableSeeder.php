@@ -39,12 +39,6 @@ class AttributeTypesTableSeeder extends Seeder
         ]);
 
         Type::create([
-            'name'   => 'Список',
-            'key'    => 'list',
-            'active' => false
-        ]);
-
-        Type::create([
             'name'   => 'Объект',
             'key'    => 'object',
             'active' => false

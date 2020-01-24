@@ -1,6 +1,6 @@
 import React from 'react'
 import { connect } from 'react-redux'
-import {Formik, Field, Form, FieldArray } from 'formik'
+import { Formik, Field, Form, FieldArray } from 'formik'
 
 import { withStyles } from '@material-ui/core/styles'
 import {
@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core'
 import { PlaylistAdd, DeleteSweep } from '@material-ui/icons';
 import {
-    TextField, Select, Switch
+    TextField, Switch
 } from 'formik-material-ui';
 
 const style = theme => ({
@@ -50,7 +50,7 @@ class CategoryForm extends React.Component {
 
                     errors.attributes = {}
 
-                    values.attributes.map((item, key) => {
+                    values.attributes.forEach((item, key) => {
                         let error = {}
 
                         if (!item.name) {
@@ -123,7 +123,7 @@ class CategoryForm extends React.Component {
                                                 <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
                                                     {values.attributes && values.attributes.length > 0 && (
                                                         values.attributes.map((attribute, index) => (
-                                                            <Grid item key={index}  className={classes.fullWidth}>
+                                                            <Grid item key={index} className={classes.fullWidth}>
                                                                 <Card className={classes.fullWidth}>
                                                                     <CardContent>
                                                                         <Grid item className={classes.fullWidth}>
@@ -185,15 +185,17 @@ class CategoryForm extends React.Component {
                                                             </Grid>
                                                         ))
                                                     )}
+                                                    <Grid item className={classes.fullWidth}>
+                                                        <Button
+                                                            onClick={() => arrayHelpers.push({ name: '', type: '', required: false})}
+                                                            aria-label={`Добавить`}
+                                                            color="primary"
+                                                            endIcon={<PlaylistAdd />}
+                                                        >
+                                                            Добавить атрибут
+                                                        </Button>
+                                                    </Grid>
                                                 </Grid>
-                                                <IconButton
-                                                    onClick={() => arrayHelpers.push({ name: '', type: '', required: false})}
-                                                    color="primary"
-                                                    aria-label="Добавить"
-                                                    component="span"
-                                                >
-                                                    <PlaylistAdd />
-                                                </IconButton>
                                             </Grid>
                                         )}
                                     />

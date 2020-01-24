@@ -8,6 +8,7 @@ use App\Http\Requests\FilterRequest;
 use App\Http\Resources\Category\Category as CategoryResource;
 use App\Models\Category\Attribute;
 use App\Models\Category\Category;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -25,27 +26,14 @@ class CategoryController extends Controller
         try {
             $categories = Category::query();
 
-            $categories = $categories->with('attributes.type')->paginate($request->has('limit') ? $request->get('limit') : $categories->count());
+            $categories = $categories->with(['attributes' => function ($query) {
+                $query->with('type')->orderBy('id');
+            }])->paginate($request->has('limit') ? $request->get('limit') : $categories->count());
 
             return CategoryResource::collection($categories);
         } catch (\Exception $e) {
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
-        }
-    }
-
-    protected function createAttribute(Category $category, Attribute\Type $type, $value)
-    {
-        switch ($type->key) {
-            case 'generic':
-
-                break;
-            default:
-                $category->attributes()->create([
-                    'name'     => $value['name'],
-                    'type_id'  => $type->id,
-                    'required' => $value['required']
-                ]);
         }
     }
 
@@ -56,6 +44,8 @@ class CategoryController extends Controller
     public function post(CategoryRequest $request)
     {
         try {
+            DB::beginTransaction();
+
             $category = Category::create([
                 'name' => $request->get('name')
             ]);
@@ -65,13 +55,19 @@ class CategoryController extends Controller
             if ($request->has('attributes')) {
                 foreach ($request->get('attributes') as $item) {
                     if ($type = $types->where('id', $item['type'])->first()) {
-                        $this->createAttribute($category, $type, $item);
+                        $category->attributes()->create([
+                            'name'     => $item['name'],
+                            'type_id'  => $type->id,
+                            'required' => $item['required']
+                        ]);
                     }
                 }
             }
 
+            DB::commit();
             return new CategoryResource($category->load('attributes.type'));
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
         }
@@ -85,6 +81,8 @@ class CategoryController extends Controller
     {
         try {
             if ($category = Category::find($categoryId)) {
+                DB::beginTransaction();
+
                 $category->update([
                     'name' => $request->get('name')
                 ]);
@@ -125,7 +123,11 @@ class CategoryController extends Controller
                     if ($attributes) {
                         foreach ($attributes as $item) {
                             if ($type = $types->where('id', $item['type'])->first()) {
-                                $this->createAttribute($category, $type, $item);
+                                $category->attributes()->create([
+                                    'name'     => $item['name'],
+                                    'type_id'  => $type->id,
+                                    'required' => $item['required']
+                                ]);
                             }
                         }
                     }
@@ -134,11 +136,13 @@ class CategoryController extends Controller
                     $category->attributes()->delete();
                 }
 
+                DB::commit();
                 return new CategoryResource($category->load('attributes.type'));
             }
 
             return response()->noContent();
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
         }

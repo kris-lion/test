@@ -1,5 +1,4 @@
 import { UserService } from '../services/user'
-import {RoleService} from "../services/role";
 
 export const UserActions = {
     users,

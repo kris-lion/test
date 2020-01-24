@@ -14,7 +14,7 @@ class Attribute extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'category_id', 'type_id', 'attribute_id', 'size', 'required'
+        'name', 'category_id', 'type_id', 'required'
     ];
 
     public $timestamps = false;
@@ -27,11 +27,6 @@ class Attribute extends Model
     public function type()
     {
         return $this->hasOne(Type::class, 'id', 'type_id');
-    }
-
-    public function attribute()
-    {
-        return $this->hasOne(Attribute::class, 'id', 'attribute_id');
     }
 
     public function values()

@@ -1,5 +1,4 @@
 import { CategoryService } from '../services/category'
-import {UserService} from "../../Access/services/user";
 
 export const CategoryActions = {
     categories,

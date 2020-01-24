@@ -8,6 +8,7 @@ use App\Http\Requests\Item\ItemRequest;
 use App\Http\Resources\Item\Item as ItemResource;
 use App\Models\Category\Category;
 use App\Models\Item;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 
@@ -47,6 +48,8 @@ class ItemController extends Controller
         try {
             $category = Category::with('attributes.type')->find($request->get('category'));
 
+            DB::beginTransaction();
+
             $item = $category->items()->create();
 
             if ($request->has('attributes')) {
@@ -56,6 +59,10 @@ class ItemController extends Controller
                    if (array_key_exists($attribute->id, $request->get('attributes')) and !empty($attributes[$attribute->id])) {
                        switch ($attribute->type->key) {
                            case 'generic':
+                               $attribute->values()->create([
+                                   'item_id' => $item->id,
+                                   'value'   => json_encode($attributes[$attribute->id])
+                               ]);
                                break;
                            default:
                                $attribute->values()->create([
@@ -67,8 +74,10 @@ class ItemController extends Controller
                 }
             }
 
+            DB::commit();
             return new ItemResource($item->load('values.attribute.type', 'category.attributes.type'));
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
         }
@@ -85,6 +94,8 @@ class ItemController extends Controller
 
             if ($item = $category->items()->find($itemId)) {
 
+                DB::beginTransaction();
+
                 if ($request->has('attributes')) {
                     $attributes = $request->get('attributes');
 
@@ -94,11 +105,21 @@ class ItemController extends Controller
                         if (array_key_exists($attribute->id, $request->get('attributes')) and !empty($attributes[$attribute->id])) {
                             switch ($attribute->type->key) {
                                 case 'generic':
+                                    if ($value) {
+                                        $value->update([
+                                            'value' => json_encode($attributes[$attribute->id])
+                                        ]);
+                                    } else {
+                                        $attribute->values()->create([
+                                            'item_id' => $item->id,
+                                            'value'   => json_encode($attributes[$attribute->id])
+                                        ]);
+                                    }
                                     break;
                                 default:
                                     if ($value) {
                                         $value->update([
-                                            'value'   => $attributes[$attribute->id]
+                                            'value' => $attributes[$attribute->id]
                                         ]);
                                     } else {
                                         $attribute->values()->create([
@@ -115,11 +136,13 @@ class ItemController extends Controller
                     $item->values()->delete();
                 }
 
+                DB::commit();
                 return new ItemResource($item->load('values.attribute.type', 'category.attributes.type'));
             }
 
             return response()->noContent();
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
         }

@@ -1,5 +1,4 @@
 import { ItemService } from '../services/item'
-import {CategoryService} from "../../Category/services/category";
 
 export const ItemActions = {
     items,

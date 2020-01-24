@@ -12,7 +12,6 @@ import {
     Button, LinearProgress
 } from '@material-ui/core';
 import { ExpandLess, ExpandMore }from '@material-ui/icons';
-import { bindActionCreators } from "redux";
 
 import { AuthorizationService } from '../Auth/services/authorization'
 

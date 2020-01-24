@@ -21,7 +21,7 @@ class CreateAttributeValuesTable extends Migration
             $table->unsignedBigInteger('item_id')->nullable()->unsigned()->comment('Идентификатор элемента');
             $table->foreign('item_id')->references('id')->on('items')
                 ->onUpdate('cascade')->onDelete('cascade');
-            $table->string('value')->comment('Значение');
+            $table->text('value')->comment('Значение');
         });
     }
 
