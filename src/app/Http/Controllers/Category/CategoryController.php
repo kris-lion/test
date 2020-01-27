@@ -27,7 +27,7 @@ class CategoryController extends Controller
             $categories = Category::query();
 
             $categories = $categories->with(['attributes' => function ($query) {
-                $query->with('type')->orderBy('id');
+                $query->with('type', 'options')->orderBy('id');
             }])->paginate($request->has('limit') ? $request->get('limit') : $categories->count());
 
             return CategoryResource::collection($categories);
@@ -55,17 +55,25 @@ class CategoryController extends Controller
             if ($request->has('attributes')) {
                 foreach ($request->get('attributes') as $item) {
                     if ($type = $types->where('id', $item['type'])->first()) {
-                        $category->attributes()->create([
+                        $attribute = $category->attributes()->create([
                             'name'     => $item['name'],
                             'type_id'  => $type->id,
                             'required' => $item['required']
                         ]);
+
+                        if (($type->key === 'select') or ($type->key === 'multiselect')) {
+                            foreach ($item['options'] as $option) {
+                                $attribute->options()->create([
+                                    'option' => $option['option']
+                                ]);
+                            }
+                        }
                     }
                 }
             }
 
             DB::commit();
-            return new CategoryResource($category->load('attributes.type'));
+            return new CategoryResource($category->load('attributes.type', 'attributes.options'));
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e);
@@ -110,6 +118,42 @@ class CategoryController extends Controller
                                        'required' => $item['required']
                                     ]);
 
+                                    if (($attribute->type->key === 'select') or ($attribute->type->key === 'multiselect')) {
+                                        $options = $item['options'];
+
+                                        $optionsId = $attribute->options->pluck('id')->toArray();
+
+                                        foreach ($options as $index => $option) {
+                                            if (array_key_exists('id', $option)) {
+                                                if ($current = $attribute->options->where('id', '=', $option['id'])->first()) {
+
+                                                    $optionsIdKey = array_search($current->id, $optionsId);
+                                                    if ($optionsIdKey !== false) {
+                                                        unset($optionsId[$optionsIdKey]);
+                                                    }
+
+                                                    $current->update([
+                                                        'option' => $option['option']
+                                                    ]);
+
+                                                    unset($options[$index]);
+                                                }
+                                            }
+                                        }
+
+                                        if ($optionsId) {
+                                            $attribute->options()->whereIn('id', $optionsId)->delete();
+                                        }
+
+                                        if ($options) {
+                                            foreach ($options as $option) {
+                                                $attribute->options()->create([
+                                                    'option' => $option['option']
+                                                ]);
+                                            }
+                                        }
+                                    }
+
                                     unset($attributes[$key]);
                                 }
                             }
@@ -123,11 +167,19 @@ class CategoryController extends Controller
                     if ($attributes) {
                         foreach ($attributes as $item) {
                             if ($type = $types->where('id', $item['type'])->first()) {
-                                $category->attributes()->create([
+                                $attribute = $category->attributes()->create([
                                     'name'     => $item['name'],
                                     'type_id'  => $type->id,
                                     'required' => $item['required']
                                 ]);
+
+                                if (($type->key === 'select') or ($type->key === 'multiselect')) {
+                                    foreach ($item['options'] as $option) {
+                                        $attribute->options()->create([
+                                            'option' => $option['option']
+                                        ]);
+                                    }
+                                }
                             }
                         }
                     }
@@ -137,7 +189,7 @@ class CategoryController extends Controller
                 }
 
                 DB::commit();
-                return new CategoryResource($category->load('attributes.type'));
+                return new CategoryResource($category->load('attributes.type', 'attributes.options'));
             }
 
             return response()->noContent();

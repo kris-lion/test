@@ -9,7 +9,7 @@ import {
     FormControlLabel, IconButton,
     Card, CardContent
 } from '@material-ui/core'
-import { PlaylistAdd, DeleteSweep } from '@material-ui/icons';
+import { PlaylistAdd, DeleteSweep, Add, Clear } from '@material-ui/icons';
 import {
     TextField, Switch
 } from 'formik-material-ui';
@@ -28,7 +28,8 @@ class CategoryForm extends React.Component {
         super(props);
 
         this.state = {
-            delete: false
+            delete: false,
+            options: props.types.filter(type => ((type.key === 'select') || (type.key === 'multiselect')) ).map(type => type.id)
         };
     }
 
@@ -39,7 +40,7 @@ class CategoryForm extends React.Component {
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required } }) : []
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options } }) : []
                 }}
                 validate = {values => {
                     const errors = {};
@@ -59,6 +60,26 @@ class CategoryForm extends React.Component {
 
                         if (!item.type) {
                             error.type = 'Выберите тип'
+                        }
+
+                        if (this.state.options.includes(item.type)) {
+                            if (!item.hasOwnProperty('options') || (item.options.length === 0)) {
+                                error.option = true
+                            } else {
+                                item.options.forEach((val, index) => {
+                                    if (!val.option.length) {
+                                        if (!error.hasOwnProperty('options')) {
+                                            error.options = {}
+                                        }
+
+                                        if (!error.options.hasOwnProperty(index)) {
+                                            error.options[index] = {}
+                                        }
+
+                                        error.options[index].option = `Введите наименование`
+                                    }
+                                })
+                            }
                         }
 
                         if (!!Object.keys(error).length) {
@@ -169,6 +190,54 @@ class CategoryForm extends React.Component {
                                                                                             </MenuItem>
                                                                                         ))}
                                                                                     </Field>
+                                                                                </Grid>
+                                                                                <Grid item className={classes.fullWidth}>
+                                                                                    <FieldArray
+                                                                                        name={`attributes.${index}.options`}
+                                                                                        render={ arrayOptions => (
+                                                                                            <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
+                                                                                                {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (values.attributes[`${index}`].hasOwnProperty('options') && values.attributes[`${index}`].options.length > 0) && (
+                                                                                                    values.attributes[`${index}`].options.map((option, key) => (
+                                                                                                        <Grid item key={key} className={classes.fullWidth}>
+                                                                                                            <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
+                                                                                                                <Grid item sm={9} className={classes.fullWidth}>
+                                                                                                                    <Field
+                                                                                                                        fullWidth
+                                                                                                                        name={`attributes.${index}.options.${key}.option`}
+                                                                                                                        type="text"
+                                                                                                                        label="Вариант"
+                                                                                                                        component={ TextField }
+                                                                                                                    />
+                                                                                                                </Grid>
+                                                                                                                <Grid item>
+                                                                                                                    <IconButton
+                                                                                                                        onClick={() => arrayOptions.remove(key) }
+                                                                                                                        color="primary"
+                                                                                                                        aria-label="Удалить"
+                                                                                                                        component="span"
+                                                                                                                    >
+                                                                                                                        <Clear />
+                                                                                                                    </IconButton>
+                                                                                                                </Grid>
+                                                                                                            </Grid>
+                                                                                                        </Grid>
+                                                                                                    ))
+                                                                                                )}
+                                                                                                {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (
+                                                                                                    <Grid item className={classes.fullWidth}>
+                                                                                                        <IconButton
+                                                                                                            onClick={() => arrayOptions.push({ option: '' })}
+                                                                                                            color={(errors.hasOwnProperty('attributes') && (errors.attributes.hasOwnProperty(`${index}`) && errors.attributes[`${index}`] !== undefined) && errors.attributes[`${index}`].option) ? 'secondary' : 'primary'}
+                                                                                                            aria-label="Добавить"
+                                                                                                            component="span"
+                                                                                                        >
+                                                                                                            <Add />
+                                                                                                        </IconButton>
+                                                                                                    </Grid>
+                                                                                                )}
+                                                                                            </Grid>
+                                                                                        )}
+                                                                                    />
                                                                                 </Grid>
                                                                                 <Grid item className={classes.fullWidth}>
                                                                                     <FormControlLabel

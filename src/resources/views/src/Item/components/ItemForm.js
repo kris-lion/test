@@ -14,6 +14,8 @@ import { FieldString } from "../../Category/components/Attribute/FieldString";
 import { FieldInteger } from "../../Category/components/Attribute/FieldInteger";
 import { FieldDouble } from "../../Category/components/Attribute/FieldDouble";
 import { FieldBoolean } from "../../Category/components/Attribute/FieldBoolean";
+import { FieldSelect } from "../../Category/components/Attribute/FieldSelect";
+import { FieldMultiselect } from "../../Category/components/Attribute/FieldMultiselect";
 import { FieldGeneric } from "../../Category/components/Attribute/FieldGeneric";
 
 const style = theme => ({
@@ -34,10 +36,8 @@ class ItemForm extends React.Component {
         let attributes = []
         let values = {}
 
-        const current = item ? item.category : category
-
-        if (Object.keys(current).length) {
-            current.attributes.forEach((attribute) => {
+        if (Object.keys(category).length) {
+            category.attributes.forEach((attribute) => {
                 switch(attribute.type.key) {
                     case 'string':
                         attributes.push({ Field: FieldString, attribute: attribute })
@@ -55,6 +55,14 @@ class ItemForm extends React.Component {
                         attributes.push({ Field: FieldBoolean, attribute: attribute })
                         values[`${attribute.id}`] = false
                         break
+                    case 'select':
+                        attributes.push({ Field: FieldSelect, attribute: attribute })
+                        values[`${attribute.id}`] = 0
+                        break
+                    case 'multiselect':
+                        attributes.push({ Field: FieldMultiselect, attribute: attribute })
+                        values[`${attribute.id}`] = []
+                        break
                     case 'generic':
                         attributes.push({ Field: FieldGeneric, attribute: attribute })
                         values[`${attribute.id}`] = []
@@ -70,6 +78,9 @@ class ItemForm extends React.Component {
                         case 'generic':
                             values[`${value.attribute.id}`] = JSON.parse(value.value.replace(new RegExp('null', 'g'), '""'))
                             break
+                        case 'multiselect':
+                            values[`${value.attribute.id}`] = JSON.parse(value.value)
+                            break
                         case 'boolean':
                             values[`${value.attribute.id}`] = !!value.value
                             break
@@ -82,7 +93,7 @@ class ItemForm extends React.Component {
 
         this.state = {
             delete: false,
-            category: current,
+            category: item ? item.category : category,
             attributes: attributes,
             values: values
         };
@@ -145,12 +156,26 @@ class ItemForm extends React.Component {
                                     })
                                 }
                             }
+
+                            if (attribute.type.key === 'multiselect') {
+                                if (!!attribute.required && !values.attributes[`${attribute.id}`].length) {
+                                    errors.attributes[`${attribute.id}`] = `Выберите ${attribute.name.toLowerCase()}`
+                                }
+                            }
+
+                            if (attribute.type.key === 'select') {
+                                if (!!attribute.required && !values.attributes.hasOwnProperty(`${attribute.id}`)) {
+                                    errors.attributes[`${attribute.id}`] = `Выберите ${attribute.name.toLowerCase()}`
+                                }
+                            }
                         })
                     }
 
                     if (!Object.keys(errors.attributes).length) {
                         delete errors.attributes
                     }
+
+                    console.log(errors)
 
                     return errors;
                 }}
@@ -215,7 +240,7 @@ class ItemForm extends React.Component {
                                     {
                                         this.state.attributes.map((item, index) => (
                                             <Grid item sm={8} key={index} className={classes.fullWidth}>
-                                                { attribute(item, values.attributes[item.attribute.id], errors) }
+                                                { attribute(item, ((item.attribute.type.key === 'select') || (item.attribute.type.key === 'multiselect')) ? item.attribute.options.map(option => { return { id: option.id, name: option.option } }) :  values.attributes[item.attribute.id], errors) }
                                             </Grid>
                                         ))
                                     }

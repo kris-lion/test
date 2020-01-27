@@ -33,6 +33,16 @@ class AttributeTypesTableSeeder extends Seeder
         ]);
 
         Type::create([
+            'name' => 'Выбор из списка',
+            'key'  => 'select'
+        ]);
+
+        Type::create([
+            'name' => 'Выбор из списка нескольких вариантов',
+            'key'  => 'multiselect'
+        ]);
+
+        Type::create([
             'name'   => 'Массив',
             'key'    => 'array',
             'active' => false

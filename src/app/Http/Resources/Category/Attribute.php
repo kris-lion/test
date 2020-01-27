@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Category;
 
+use App\Http\Resources\Category\Attribute\Option as OptionResource;
 use App\Http\Resources\Category\Attribute\Type;
 use Illuminate\Http\Resources\Json\JsonResource;
 
@@ -13,7 +14,8 @@ class Attribute extends JsonResource
             'id'       => $this->id,
             'name'     => $this->name,
             'type'     => new Type($this->whenLoaded('type')),
-            'required' => $this->required
+            'required' => $this->required,
+            'options'  => OptionResource::collection($this->whenLoaded('options'))
         ];
     }
 }

@@ -33,6 +33,10 @@ Route::group(['middleware' => ['api']], function () {
             });
         });
 
+        Route::namespace('Category\Unit')->group(function () {
+            Route::get('/units', 'UnitController@get');
+        });
+
         Route::group(['middleware' => ['permission:user']], function () {
             Route::get('/users', 'User\UserController@get');
 

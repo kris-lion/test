@@ -13,6 +13,7 @@ import AddIcon from '@material-ui/icons/Add';
 import { ItemActions } from "./actions/item";
 import { ItemForm } from "./components/ItemForm";
 import { CategoryActions } from "../Category/actions/category";
+import { UnitActions } from "../Category/actions/Unit/unit";
 
 const style = theme => ({
     field: {
@@ -53,8 +54,9 @@ class Item extends React.Component {
     }
 
     componentDidMount () {
-        const { category } = this.props
+        const { category, unit } = this.props
 
+        unit.units();
         category.categories();
     }
 
@@ -148,7 +150,10 @@ class Item extends React.Component {
                         return JSON.parse(value.value).map(el => {
                             return el.name
                         }).join(', ')
-                        break
+                    case 'select':
+                        return value.attribute.options.filter(el => parseInt(el.id) === parseInt(value.value)).map(el => { return el.option }).join(', ')
+                    case 'multiselect':
+                        return value.attribute.options.filter(el => JSON.parse(value.value).includes(el.id)).map(el => { return el.option }).join(', ')
                     case 'boolean':
                         return <Check />
                     default:
@@ -172,7 +177,7 @@ class Item extends React.Component {
                             >
                                 {categories.data.map(option => (
                                     <MenuItem key={ option.id } value={ option }>
-                                        {option.name}
+                                        { option.name }
                                     </MenuItem>
                                 ))}
                             </Select>
@@ -253,7 +258,8 @@ function mapDispatchToProps(dispatch) {
     return {
         dispatch,
         actions: bindActionCreators(ItemActions, dispatch),
-        category: bindActionCreators(CategoryActions, dispatch)
+        category: bindActionCreators(CategoryActions, dispatch),
+        unit: bindActionCreators(UnitActions, dispatch)
     }
 }
 

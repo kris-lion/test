@@ -1,4 +1,5 @@
 import React from "react";
+import { connect } from "react-redux";
 import { Field, FieldArray } from "formik";
 
 import { withStyles } from '@material-ui/core/styles'
@@ -6,6 +7,7 @@ import { withStyles } from '@material-ui/core/styles'
 import { Card, CardContent, Grid, IconButton, Button } from "@material-ui/core";
 import { TextField } from "formik-material-ui";
 import { DeleteSweep, PlaylistAdd } from "@material-ui/icons";
+import Autocomplete from '@material-ui/lab/Autocomplete';
 
 const style = theme => ({
     fullWidth: {
@@ -15,7 +17,7 @@ const style = theme => ({
 
 class FieldGeneric extends React.Component {
     render () {
-        const { id, label, items, errors, classes } = this.props
+        const { id, label, items, errors, units, classes } = this.props
 
         return (
             <FieldArray
@@ -53,42 +55,58 @@ class FieldGeneric extends React.Component {
                                                         </Grid>
                                                         <Grid item className={classes.fullWidth}>
                                                             <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
-                                                                <Grid item sm={3} className={classes.fullWidth}>
+                                                                <Grid item sm={5} className={classes.fullWidth}>
                                                                     <Field
                                                                         fullWidth
-                                                                        name={`attributes.${id}.${index}.substance.quantity`}
+                                                                        name={`attributes.${id}.${index}.numerator.quantity`}
                                                                         type="number"
-                                                                        label="кол-во"
-                                                                        inputProps={{ step: 0.00001 }}
-                                                                        component={ TextField }
-                                                                    />
-                                                                </Grid><
-                                                                Grid item sm={3} className={classes.fullWidth}>
-                                                                <Field
-                                                                    fullWidth
-                                                                    name={`attributes.${id}.${index}.substance.unit`}
-                                                                    type="text"
-                                                                    label="ед. изм."
-                                                                    component={ TextField }
-                                                                />
-                                                            </Grid>
-                                                                <Grid item sm={3} className={classes.fullWidth}>
-                                                                    <Field
-                                                                        fullWidth
-                                                                        name={`attributes.${id}.${index}.weight.quantity`}
-                                                                        type="number"
-                                                                        label="кол-во"
+                                                                        label="Количество"
                                                                         inputProps={{ step: 0.00001 }}
                                                                         component={ TextField }
                                                                     />
                                                                 </Grid>
-                                                                <Grid item sm={3} className={classes.fullWidth}>
+                                                                <Grid item sm={7} className={classes.fullWidth}>
+                                                                    <Autocomplete
+                                                                        options={ units }
+                                                                        getOptionLabel={option => option.name}
+                                                                        renderInput={params => (
+                                                                            <Field
+                                                                                fullWidth
+                                                                                {...params}
+                                                                                name={`attributes.${id}.${index}.numerator.unit`}
+                                                                                type="text"
+                                                                                label="Ед. изм."
+                                                                                component={ TextField }
+                                                                            />
+                                                                        )}
+                                                                    />
+                                                                </Grid>
+                                                            </Grid>
+                                                            <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
+                                                                <Grid item sm={5} className={classes.fullWidth}>
                                                                     <Field
                                                                         fullWidth
-                                                                        name={`attributes.${id}.${index}.weight.unit`}
-                                                                        type="text"
-                                                                        label="ед. изм."
+                                                                        name={`attributes.${id}.${index}.denominator.quantity`}
+                                                                        type="number"
+                                                                        label="Количество"
+                                                                        inputProps={{ step: 0.00001 }}
                                                                         component={ TextField }
+                                                                    />
+                                                                </Grid>
+                                                                <Grid item sm={7} className={classes.fullWidth}>
+                                                                    <Autocomplete
+                                                                        options={ units }
+                                                                        getOptionLabel={option => option.name}
+                                                                        renderInput={params => (
+                                                                            <Field
+                                                                                fullWidth
+                                                                                {...params}
+                                                                                name={`attributes.${id}.${index}.denominator.unit`}
+                                                                                type="text"
+                                                                                label="Ед. изм."
+                                                                                component={ TextField }
+                                                                            />
+                                                                        )}
                                                                     />
                                                                 </Grid>
                                                             </Grid>
@@ -104,11 +122,11 @@ class FieldGeneric extends React.Component {
                                 <Button
                                     onClick={() => arrayHelpers.push({
                                         'name': '',
-                                        'substance': {
+                                        'numerator': {
                                             quantity: 0.00000,
                                             unit: ''
                                         },
-                                        'weight': {
+                                        'denominator': {
                                             quantity: 0.00000,
                                             unit: ''
                                         }
@@ -128,6 +146,21 @@ class FieldGeneric extends React.Component {
     }
 }
 
+function mapStateToProps(state) {
+    const { units } = state.unit
+
+    return {
+        units
+    }
+}
+
+function mapDispatchToProps(dispatch) {
+    return {
+        dispatch
+    }
+}
+
 FieldGeneric = withStyles(style)(FieldGeneric)
 
-export { FieldGeneric }
+const connectedFieldGeneric = connect(mapStateToProps, mapDispatchToProps)(FieldGeneric)
+export { connectedFieldGeneric as FieldGeneric }

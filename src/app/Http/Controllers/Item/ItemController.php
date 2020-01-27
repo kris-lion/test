@@ -30,7 +30,11 @@ class ItemController extends Controller
                 $items->where(['category_id' => $request->get('category')]);
             }
 
-            $items = $items->with('values.attribute.type', 'category.attributes.type')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
+            $items = $items->with('category.attributes.type')->with(['values' => function ($query) {
+                $query->with(['attribute' => function ($query) {
+                    $query->with('type', 'options');
+                }]);
+            }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
 
             return ItemResource::collection($items);
         } catch (\Exception $e) {
@@ -64,6 +68,12 @@ class ItemController extends Controller
                                    'value'   => json_encode($attributes[$attribute->id])
                                ]);
                                break;
+                           case 'multiselect':
+                               $attribute->values()->create([
+                                   'item_id' => $item->id,
+                                   'value'   => json_encode($attributes[$attribute->id])
+                               ]);
+                               break;
                            default:
                                $attribute->values()->create([
                                    'item_id' => $item->id,
@@ -75,7 +85,11 @@ class ItemController extends Controller
             }
 
             DB::commit();
-            return new ItemResource($item->load('values.attribute.type', 'category.attributes.type'));
+            return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
+                $query->with(['attribute' => function ($query) {
+                    $query->with('type', 'options');
+                }]);
+            }]));
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e);
@@ -116,6 +130,18 @@ class ItemController extends Controller
                                         ]);
                                     }
                                     break;
+                                case 'multiselect':
+                                    if ($value) {
+                                        $value->update([
+                                            'value' => json_encode($attributes[$attribute->id])
+                                        ]);
+                                    } else {
+                                        $attribute->values()->create([
+                                            'item_id' => $item->id,
+                                            'value'   => json_encode($attributes[$attribute->id])
+                                        ]);
+                                    }
+                                    break;
                                 default:
                                     if ($value) {
                                         $value->update([
@@ -137,7 +163,11 @@ class ItemController extends Controller
                 }
 
                 DB::commit();
-                return new ItemResource($item->load('values.attribute.type', 'category.attributes.type'));
+                return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
+                    $query->with(['attribute' => function ($query) {
+                        $query->with('type', 'options');
+                    }]);
+                }]));
             }
 
             return response()->noContent();
