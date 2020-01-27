@@ -4,7 +4,7 @@ export const UnitService = {
     units
 }
 
-function types (l) {
+function units (l) {
     const options = {
         method: 'GET'
     }

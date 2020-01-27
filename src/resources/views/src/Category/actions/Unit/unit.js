@@ -9,7 +9,7 @@ function units () {
         dispatch({ type: 'FILLING', payload: true })
         dispatch({ type: 'UNITS_REQUEST' })
 
-        UnitService.types()
+        UnitService.units()
             .then(
                 units => {
                     dispatch({ type: 'UNITS_SUCCESS', payload: units })
