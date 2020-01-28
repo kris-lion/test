@@ -13,6 +13,7 @@ class Unit extends JsonResource
         return [
             'id'    => $this->id,
             'name'  => $this->name,
+            'short' => $this->short,
             'type'  => new Type($this->whenLoaded('type')),
             'group' => new Group($this->whenLoaded('group'))
         ];

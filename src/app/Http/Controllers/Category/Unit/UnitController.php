@@ -21,7 +21,9 @@ class UnitController extends Controller
     public function get(FilterRequest $request)
     {
         try {
-            $units = Unit::query();
+            $units = Unit::whereHas('type', function ($query) {
+                $query->where(['name' => 'Международные единицы измерения, включенные в ЕСКК']);
+            });
 
             $units = $units->paginate($request->has('limit') ? $request->get('limit') : $units->count());
 

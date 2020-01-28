@@ -68,7 +68,7 @@ class FieldGeneric extends React.Component {
                                                                 <Grid item sm={7} className={classes.fullWidth}>
                                                                     <Autocomplete
                                                                         options={ units }
-                                                                        getOptionLabel={option => option.name}
+                                                                        getOptionLabel={option => option.short}
                                                                         renderInput={params => (
                                                                             <Field
                                                                                 fullWidth
@@ -96,7 +96,7 @@ class FieldGeneric extends React.Component {
                                                                 <Grid item sm={7} className={classes.fullWidth}>
                                                                     <Autocomplete
                                                                         options={ units }
-                                                                        getOptionLabel={option => option.name}
+                                                                        getOptionLabel={option => option.short}
                                                                         renderInput={params => (
                                                                             <Field
                                                                                 fullWidth

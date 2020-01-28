@@ -43,6 +43,8 @@ class CategoryController extends Controller
      */
     public function post(CategoryRequest $request)
     {
+        //Реализовать как дерево категорий
+
         try {
             DB::beginTransaction();
 
@@ -207,6 +209,15 @@ class CategoryController extends Controller
     public function delete($categoryId)
     {
         try {
+            /*
+             * Перед удалением категории нужно проверить на наличие активных эталонов в ней,
+             * если эталоны есть, то перед удалением предупредить о наличии эталонов и дать на выбор
+             *
+             * 1. Категорию для их автоматического переноса. Категорию предложить обычным списком с подкатегориями.
+             * 2. Оставить связь с удаленной категорией
+             * 3. Отвязать эталоны от категории (оставить nuLL в поле category_id)
+             */
+
             if ($category = Category::find($categoryId)) {
                 $category->delete();
             }
