@@ -16,8 +16,14 @@ class CreateUnitsTable extends Migration
         Schema::create('units', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->comment('Наименование');
-            $table->string('short')->comment('Сокращение');
+            $table->string('short')->nullable()->comment('Сокращение');
             $table->string('code')->comment('Код');
+            $table->unsignedBigInteger('group_id')->unsigned()->comment('Идентификатор группы');
+            $table->foreign('group_id')->references('id')->on('unit_groups')
+                ->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('type_id')->unsigned()->comment('Идентификатор типа');
+            $table->foreign('type_id')->references('id')->on('unit_types')
+                ->onUpdate('cascade')->onDelete('cascade');
         });
     }
 

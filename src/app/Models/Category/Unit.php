@@ -14,7 +14,7 @@ class Unit extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'group_id', 'type_id'
+        'name', 'code', 'short', 'group_id', 'type_id'
     ];
 
     public $timestamps = false;
