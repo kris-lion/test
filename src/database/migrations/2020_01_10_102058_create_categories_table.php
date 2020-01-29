@@ -16,7 +16,7 @@ class CreateCategoriesTable extends Migration
         Schema::create('categories', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name')->comment('Наименование');
-            $table->unsignedBigInteger('category_id')->unsigned()->comment('Идентификатор категории');
+            $table->unsignedBigInteger('category_id')->nullable()->unsigned()->comment('Идентификатор категории');
             $table->foreign('category_id')->references('id')->on('categories')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->softDeletesTz();

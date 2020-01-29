@@ -12,8 +12,8 @@ import { Check } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import { ItemActions } from "./actions/item";
 import { ItemForm } from "./components/ItemForm";
-import { CategoryActions } from "../Category/actions/category";
 import { UnitActions } from "../Category/actions/Unit/unit";
+import { SystemActions } from "../App/actions/system";
 
 const style = theme => ({
     field: {
@@ -54,10 +54,10 @@ class Item extends React.Component {
     }
 
     componentDidMount () {
-        const { category, unit } = this.props
+        const { system, unit } = this.props
 
         unit.units();
-        category.categories();
+        system.categories();
     }
 
     componentWillUnmount() {
@@ -164,6 +164,33 @@ class Item extends React.Component {
             return null
         }
 
+        const assembly = (categories, parent = 0, level = 0) => {
+            let result = []
+
+            if (categories.hasOwnProperty(parent)) {
+                categories[parent].forEach(category => {
+                    result.push(<MenuItem key={ category.id } value={ category }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }</MenuItem>)
+
+                    result = result.concat(assembly(categories, category.id, level + 1))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = categories => {
+            let tmp = {}
+            categories.forEach(category => {
+                if (!tmp.hasOwnProperty((category.category !== null) ? category.category.id : 0)) {
+                    tmp[(category.category !== null) ? category.category.id : 0] = []
+                }
+
+                tmp[(category.category !== null) ? category.category.id : 0].push(category)
+            })
+
+            return assembly(tmp)
+        }
+
         return (
             <Grid container direction="column" justify="space-between" alignItems="center" className={classes.field}>
                 <Grid item className={classes.item}>
@@ -175,11 +202,9 @@ class Item extends React.Component {
                                 value={ category }
                                 onChange={ handleChange }
                             >
-                                {categories.data.map(option => (
-                                    <MenuItem key={ option.id } value={ option }>
-                                        { option.name }
-                                    </MenuItem>
-                                ))}
+                                {
+                                    getCategoriesTree(categories).map(el => el)
+                                }
                             </Select>
                         </Grid>
                     </Grid>
@@ -247,7 +272,7 @@ class Item extends React.Component {
 
 function mapStateToProps(state) {
     const { items } = state.item
-    const { categories } = state.category
+    const { categories } = state.system
 
     return {
         items, categories
@@ -258,7 +283,7 @@ function mapDispatchToProps(dispatch) {
     return {
         dispatch,
         actions: bindActionCreators(ItemActions, dispatch),
-        category: bindActionCreators(CategoryActions, dispatch),
+        system: bindActionCreators(SystemActions, dispatch),
         unit: bindActionCreators(UnitActions, dispatch)
     }
 }

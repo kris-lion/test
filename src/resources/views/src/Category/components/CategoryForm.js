@@ -34,13 +34,42 @@ class CategoryForm extends React.Component {
     }
 
     render() {
-        const { handleClose, handleDelete, handleSave, open, category, types, classes, dispatch } = this.props
+        const { handleClose, handleDelete, handleSave, open, category, categories, types, classes, dispatch } = this.props
+
+        const assembly = (options, parent = 0, level = 0, disabled = false) => {
+            let result = []
+
+            if (options.hasOwnProperty(parent)) {
+                options[parent].forEach(option => {
+                    result.push(<MenuItem key={ option.id } disabled={ disabled || (category ? (option.id === category.id) : false) } value={ option.id }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + option.name }</MenuItem>)
+
+                    result = result.concat(assembly(options, option.id, level + 1, disabled ? disabled : (category ? (option.id === category.id) : false)))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = options => {
+            let tmp = {}
+
+            options.forEach(option => {
+                if (!tmp.hasOwnProperty((option.category !== null) ? option.category.id : 0)) {
+                    tmp[(option.category !== null) ? option.category.id : 0] = []
+                }
+
+                tmp[(option.category !== null) ? option.category.id : 0].push(option)
+            })
+
+            return [<MenuItem key={ 0 } value="">{ '\u00A0\u00A0\u00A0\u00A0' }</MenuItem>].concat(assembly(tmp))
+        }
 
         return (
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options } }) : []
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options } }) : [],
+                    category: category ? (category.category ? category.category.id : '') : ''
                 }}
                 validate = {values => {
                     const errors = {};
@@ -136,6 +165,22 @@ class CategoryForm extends React.Component {
                                             label="Наименование"
                                             component={ TextField }
                                         />
+                                    </Grid>
+                                    <Grid item sm={8} className={classes.fullWidth}>
+                                        <Field
+                                            fullWidth
+                                            type="text"
+                                            name="category"
+                                            label="Родительская категория"
+                                            select
+                                            variant="standard"
+                                            component={ TextField }
+                                            InputLabelProps={{
+                                                shrink: true
+                                            }}
+                                        >
+                                            { getCategoriesTree(categories).map(el => el) }
+                                        </Field>
                                     </Grid>
                                     <FieldArray
                                         name="attributes"

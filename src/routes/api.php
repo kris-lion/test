@@ -48,7 +48,10 @@ Route::group(['middleware' => ['api']], function () {
         });
 
         Route::group(['middleware' => ['permission:reference']], function () {
-            Route::get('/items', 'Item\ItemController@get');
+            Route::namespace('Item')->prefix('/items')->group(function () {
+                Route::get('/', 'ItemController@get');
+                Route::get('/count', 'ItemController@count');
+            });
 
             Route::namespace('Item')->prefix('/item')->group(function () {
                 Route::post('/', 'ItemController@post');

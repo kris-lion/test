@@ -16,10 +16,15 @@ class Category extends Model
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name', 'category_id'
     ];
 
     public $timestamps = false;
+
+    public function category()
+    {
+        return $this->hasOne(Category::class, 'id', 'category_id');
+    }
 
     public function attributes()
     {

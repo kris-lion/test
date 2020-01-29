@@ -44,6 +44,29 @@ class ItemController extends Controller
     }
 
     /**
+     * Количество эталонов
+     *
+     * @param FilterRequest $request
+     *
+     * @return AnonymousResourceCollection
+     */
+    public function count(FilterRequest $request)
+    {
+        try {
+            $items = Item::query();
+
+            if ($request->has('category')) {
+                $items->where(['category_id' => $request->get('category')]);
+            }
+
+            return response()->json(['count' => $items->count()]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->make(['message' => trans('http.status.500')], 500);
+        }
+    }
+
+    /**
      * Добавить атрибут
      *
      */

@@ -2,6 +2,7 @@ import { combineReducers } from 'redux'
 
 import application from './application'
 import alert from './alert'
+import system from './system'
 import authentication from  '../../Auth/reducers/authentication'
 import account from '../../Account/reducers/account'
 import item from '../../Item/reducers/item'
@@ -15,6 +16,7 @@ import user from '../../Access/reducers/user'
 const AppReducers = combineReducers({
     application,
     alert,
+    system,
     authentication,
     account,
     item,

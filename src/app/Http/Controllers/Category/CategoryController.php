@@ -28,7 +28,7 @@ class CategoryController extends Controller
 
             $categories = $categories->with(['attributes' => function ($query) {
                 $query->with('type', 'options')->orderBy('id');
-            }])->paginate($request->has('limit') ? $request->get('limit') : $categories->count());
+            }])->with('category')->orderBy('category_id')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : $categories->count());
 
             return CategoryResource::collection($categories);
         } catch (\Exception $e) {
@@ -43,13 +43,12 @@ class CategoryController extends Controller
      */
     public function post(CategoryRequest $request)
     {
-        //Реализовать как дерево категорий
-
         try {
             DB::beginTransaction();
 
             $category = Category::create([
-                'name' => $request->get('name')
+                'name'        => $request->get('name'),
+                'category_id' => $request->has('category') ? $request->get('category') : null
             ]);
 
             $types = Attribute\Type::where(['active' => true])->get();
@@ -75,7 +74,7 @@ class CategoryController extends Controller
             }
 
             DB::commit();
-            return new CategoryResource($category->load('attributes.type', 'attributes.options'));
+            return new CategoryResource($category->load('attributes.type', 'attributes.options', 'category'));
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e);
@@ -94,7 +93,8 @@ class CategoryController extends Controller
                 DB::beginTransaction();
 
                 $category->update([
-                    'name' => $request->get('name')
+                    'name'        => $request->get('name'),
+                    'category_id' => $request->has('category') ? $request->get('category') : null
                 ]);
 
                 if ($request->has('attributes') and count($request->get('attributes'))) {
@@ -191,7 +191,7 @@ class CategoryController extends Controller
                 }
 
                 DB::commit();
-                return new CategoryResource($category->load('attributes.type', 'attributes.options'));
+                return new CategoryResource($category->load('attributes.type', 'attributes.options', 'category'));
             }
 
             return response()->noContent();

@@ -12,7 +12,8 @@ class Category extends JsonResource
         return [
             'id'         => $this->id,
             'name'       => $this->name,
-            'attributes' => AttributeResource::collection($this->whenLoaded('attributes'))
+            'attributes' => AttributeResource::collection($this->whenLoaded('attributes')),
+            'category'   => new Category($this->whenLoaded('category'))
         ];
     }
 }

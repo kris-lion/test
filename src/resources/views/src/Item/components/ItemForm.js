@@ -90,7 +90,7 @@ class ItemForm extends React.Component {
                 })
             }
         }
-
+        console.log(category)
         this.state = {
             delete: false,
             category: item ? item.category : category,
@@ -299,10 +299,10 @@ class ItemForm extends React.Component {
 }
 
 function mapStateToProps(state) {
-    const { categories } = state.category
+    const { categories } = state.system
 
     return {
-        categories: categories.data
+        categories
     }
 }
 
