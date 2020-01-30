@@ -8,6 +8,8 @@ use App\Http\Requests\FilterRequest;
 use App\Http\Resources\Category\Category as CategoryResource;
 use App\Models\Category\Attribute;
 use App\Models\Category\Category;
+use App\Models\Item;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -206,24 +208,46 @@ class CategoryController extends Controller
      * Удалить категорию
      *
      */
-    public function delete($categoryId)
+    public function delete(Request $request, $categoryId)
     {
         try {
-            /*
-             * Перед удалением категории нужно проверить на наличие активных эталонов в ней,
-             * если эталоны есть, то перед удалением предупредить о наличии эталонов и дать на выбор
-             *
-             * 1. Категорию для их автоматического переноса. Категорию предложить обычным списком с подкатегориями.
-             * 2. Оставить связь с удаленной категорией
-             * 3. Отвязать эталоны от категории (оставить nuLL в поле category_id)
-             */
-
             if ($category = Category::find($categoryId)) {
+                DB::beginTransaction();
+
+                if ($request->has('type')) {
+                    switch ($request->get('type')) {
+                        case 'empty':
+                            $descendants = DB::select("SELECT id FROM categories WHERE category_id = {$category->id} UNION SELECT id FROM categories WHERE category_id IN (SELECT id FROM categories WHERE category_id = {$category->id})");
+                            $descendants = collect($descendants)->pluck('id')->toArray();
+
+                            Item::whereIn('category_id', array_merge([$category->id], $descendants))->update([
+                                'category_id' => null
+                            ]);
+
+                            Category::whereIn('id', $descendants)->delete();
+                            break;
+                        case 'category':
+                            $current = Category::find($request->get('category'));
+
+                            Item::where(['category_id' => $category->id])->update([
+                                'category_id' => $current->id
+                            ]);
+
+                            Category::where(['category_id' => $category->id])->update(['category_id' => $current->id]);
+                            break;
+                        default:
+                            $descendants = DB::select("SELECT id FROM categories WHERE category_id = {$category->id} UNION SELECT id FROM categories WHERE category_id IN (SELECT id FROM categories WHERE category_id = {$category->id})");
+                            Category::whereIn('id', collect($descendants)->pluck('id')->toArray())->delete();
+                    }
+                }
+
                 $category->delete();
             }
 
+            DB::commit();
             return response()->noContent();
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
         }

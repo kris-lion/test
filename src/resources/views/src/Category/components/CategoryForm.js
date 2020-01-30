@@ -7,7 +7,7 @@ import {
     Button, CircularProgress, MenuItem,
     Dialog, DialogTitle, DialogContent, DialogActions, Grid,
     FormControlLabel, IconButton,
-    Card, CardContent
+    Card, CardContent, Select, FormHelperText, FormControl
 } from '@material-ui/core'
 import { PlaylistAdd, DeleteSweep, Add, Clear } from '@material-ui/icons';
 import {
@@ -29,6 +29,8 @@ class CategoryForm extends React.Component {
 
         this.state = {
             delete: false,
+            confirmation: false,
+            category: false,
             options: props.types.filter(type => ((type.key === 'select') || (type.key === 'multiselect')) ).map(type => type.id)
         };
     }
@@ -50,7 +52,7 @@ class CategoryForm extends React.Component {
             return result
         }
 
-        const getCategoriesTree = options => {
+        const getCategoriesTree = (options, full = true) => {
             let tmp = {}
 
             options.forEach(option => {
@@ -61,7 +63,11 @@ class CategoryForm extends React.Component {
                 tmp[(option.category !== null) ? option.category.id : 0].push(option)
             })
 
-            return [<MenuItem key={ 0 } value="">{ '\u00A0\u00A0\u00A0\u00A0' }</MenuItem>].concat(assembly(tmp))
+            if (full) {
+                return [<MenuItem key={0} value="">{'\u00A0\u00A0\u00A0\u00A0'}</MenuItem>].concat(assembly(tmp))
+            } else {
+                return assembly(tmp)
+            }
         }
 
         return (
@@ -315,50 +321,115 @@ class CategoryForm extends React.Component {
                                     />
                                 </Grid>
                             </DialogContent>
-                            <DialogActions>
-                                {
-                                    category
-                                        ? (
-                                            <DialogActions>
-                                                <Button
-                                                    disabled={ isSubmitting || this.state.delete }
-                                                    onClick={() => {
-                                                        this.setState({ delete: true })
-                                                        handleDelete(category.id).then(
-                                                            () => {
-                                                                handleClose()
+                            {
+                                category
+                                    ? (
+                                        <DialogActions>
+                                            {
+                                                this.state.confirmation
+                                                    ?
+                                                        this.state.category
+                                                            ? <FormControl className={classes.fullWidth} error>
+                                                                <Select fullWidth value={0} error
+                                                                    onChange={event => {
+                                                                        this.setState({confirmation: false, category: false})
+                                                                        handleDelete(category.id, { type: 'category', category: event.target.value}).then(
+                                                                            () => {
+                                                                                handleClose()
+                                                                            }
+                                                                        )
+                                                                    }}
+                                                                >
+                                                                    { getCategoriesTree(categories, false).map(el => el) }
+                                                                </Select>
+                                                                <FormHelperText>Выберите категорию для переноса эталонов</FormHelperText>
+                                                            </FormControl>
+                                                            : <FormControl className={classes.fullWidth} error>
+                                                                <Select fullWidth value="" error
+                                                                        onChange={event => {
+                                                                            const type = event.target.value
+
+                                                                            if (type === 'category') {
+                                                                                this.setState({ category: true })
+                                                                            } else {
+                                                                                this.setState({confirmation: false})
+                                                                                handleDelete(category.id, { type: type }).then(
+                                                                                    () => {
+                                                                                        handleClose()
+                                                                                    }
+                                                                                )
+                                                                            }
+                                                                        }}
+                                                                >
+                                                                    <MenuItem value="category">Выбрать категорию для переноса эталонов</MenuItem>
+                                                                    <MenuItem value="connect">Оставить связь эталонов с удалённой категорией</MenuItem>
+                                                                    <MenuItem value="empty">Оставить эталоны без категории</MenuItem>
+                                                                </Select>
+                                                                <FormHelperText>В категории присутствуют эталоны, необходимо выбрать тип удаления</FormHelperText>
+                                                            </FormControl>
+                                                    : <Button
+                                                        disabled={isSubmitting || this.state.delete}
+                                                        onClick={() => {
+                                                            this.setState({delete: true})
+                                                            handleDelete(category.id).then(
+                                                                val => {
+                                                                    if (val) {
+                                                                        this.setState({confirmation: true})
+                                                                    } else {
+                                                                        handleClose()
+                                                                    }
+                                                                }
+                                                            )
+                                                        }}
+                                                        color="secondary"
+                                                        type="submit"
+                                                    >
+                                                        {
+                                                            this.state.delete
+                                                                ? <CircularProgress size={24}/>
+                                                                : 'Удалить'
+                                                        }
+                                                    </Button>
+                                            }
+                                            {
+                                                this.state.confirmation
+                                                    ? < Button
+                                                        onClick={() => {
+                                                            if (this.state.category) {
+                                                                this.setState({ category: false })
+                                                            } else {
+                                                                this.setState({ delete: false, confirmation: false })
                                                             }
-                                                        )
-                                                    }}
-                                                    color="secondary"
-                                                    type="submit"
-                                                >
-                                                    { this.state.delete ? <CircularProgress size={24} /> : 'Удалить' }
-                                                </Button>
-                                                < Button
-                                                    disabled={ isSubmitting || this.state.delete }
-                                                    onClick={ handleSubmit }
-                                                    color="primary"
-                                                    type="submit"
-                                                >
-                                                    { isSubmitting ? <CircularProgress size={24} /> : 'Сохранить' }
-                                                </Button>
-                                            </DialogActions>
-                                        )
-                                        : (
-                                            <DialogActions>
-                                                < Button
-                                                    disabled={ isSubmitting }
-                                                    onClick={ handleSubmit }
-                                                    color="primary"
-                                                    type="submit"
-                                                >
-                                                    { isSubmitting ? <CircularProgress size={24} /> : 'Добавить' }
-                                                </Button>
-                                            </DialogActions>
-                                        )
-                                }
-                            </DialogActions>
+                                                        }}
+                                                        color="primary"
+                                                        type="button"
+                                                    >
+                                                        Отменить
+                                                    </Button>
+                                                    : < Button
+                                                        disabled={isSubmitting || this.state.delete}
+                                                        onClick={handleSubmit}
+                                                        color="primary"
+                                                        type="submit"
+                                                    >
+                                                        {isSubmitting ? <CircularProgress size={24}/> : 'Сохранить'}
+                                                    </Button>
+                                            }
+                                        </DialogActions>
+                                    )
+                                    : (
+                                        <DialogActions>
+                                            < Button
+                                                disabled={ isSubmitting }
+                                                onClick={ handleSubmit }
+                                                color="primary"
+                                                type="submit"
+                                            >
+                                                { isSubmitting ? <CircularProgress size={24} /> : 'Добавить' }
+                                            </Button>
+                                        </DialogActions>
+                                    )
+                            }
                         </Dialog>
                     </Form>
                 )}

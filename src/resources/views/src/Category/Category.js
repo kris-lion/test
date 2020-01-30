@@ -80,37 +80,40 @@ class Category extends React.Component {
         const { categories, options, classes } = this.props
         const { category, dialog, page, rowsPerPage } = this.state
 
-        const handleDelete = (id) => {
+        const handleDelete = (id, params = null) => {
             const { actions, item, system } = this.props
 
             return new Promise((resolve, reject) => {
-                item.count({ category: id })
-                    .then(
-                        count => {
-                            if (count > 0) {
-                                resolve()
-                            } else {
-                                return actions.remove(id).then(
-                                    () => {
-                                        system.categories();
-                                        actions.categories({ page: page + 1, limit: rowsPerPage })
-                                        resolve()
-                                    }
-                                )
-                            }
-                        },
-                        error => {
-                            reject()
+                if (params) {
+                    return actions.remove(id, params).then(
+                        () => {
+                            system.categories();
+                            actions.categories({page: page + 1, limit: rowsPerPage})
+                            resolve()
                         }
                     )
-            })
-
-            /*return actions.remove(id).then(
-                () => {
-                    system.categories();
-                    return actions.categories({ page: page + 1, limit: rowsPerPage })
+                } else {
+                    item.count({category: id})
+                        .then(
+                            count => {
+                                if (count > 0) {
+                                    resolve(count)
+                                } else {
+                                    return actions.remove(id).then(
+                                        () => {
+                                            system.categories();
+                                            actions.categories({page: page + 1, limit: rowsPerPage})
+                                            resolve()
+                                        }
+                                    )
+                                }
+                            },
+                            error => {
+                                reject()
+                            }
+                        )
                 }
-            )*/
+            })
         }
 
         const handleSave = (values, id = null) => {

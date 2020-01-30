@@ -90,7 +90,7 @@ class ItemForm extends React.Component {
                 })
             }
         }
-        console.log(category)
+
         this.state = {
             delete: false,
             category: item ? item.category : category,
@@ -174,8 +174,6 @@ class ItemForm extends React.Component {
                     if (!Object.keys(errors.attributes).length) {
                         delete errors.attributes
                     }
-
-                    console.log(errors)
 
                     return errors;
                 }}
