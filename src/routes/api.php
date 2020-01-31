@@ -18,6 +18,10 @@ Route::group(['middleware' => ['api']], function () {
     });
 
     Route::group(['middleware' => ['token']], function () {
+        Route::namespace('Dictionary')->prefix('/dictionary')->group(function () {
+            Route::get('/generics', 'DictionaryController@generics');
+        });
+
         Route::group(['middleware' => ['permission:role']], function () {
             Route::namespace('User\Auth')->group(function () {
                 Route::prefix('/user')->group(function () {

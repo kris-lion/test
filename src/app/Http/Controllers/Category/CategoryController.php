@@ -61,7 +61,8 @@ class CategoryController extends Controller
                         $attribute = $category->attributes()->create([
                             'name'     => $item['name'],
                             'type_id'  => $type->id,
-                            'required' => $item['required']
+                            'required' => $item['required'],
+                            'value'    => $item['value']
                         ]);
 
                         if (($type->key === 'select') or ($type->key === 'multiselect')) {
@@ -118,8 +119,9 @@ class CategoryController extends Controller
                                     }
 
                                     $attribute->update([
-                                       'name'     => $item['name'],
-                                       'required' => $item['required']
+                                        'name'     => $item['name'],
+                                        'required' => $item['required'],
+                                        'value'    => $item['value']
                                     ]);
 
                                     if (($attribute->type->key === 'select') or ($attribute->type->key === 'multiselect')) {
@@ -174,7 +176,8 @@ class CategoryController extends Controller
                                 $attribute = $category->attributes()->create([
                                     'name'     => $item['name'],
                                     'type_id'  => $type->id,
-                                    'required' => $item['required']
+                                    'required' => $item['required'],
+                                    'value'    => $item['value']
                                 ]);
 
                                 if (($type->key === 'select') or ($type->key === 'multiselect')) {

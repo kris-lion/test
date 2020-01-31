@@ -23,6 +23,13 @@ const style = theme => ({
     }
 })
 
+const dictionaries = [
+    {
+        key: 'generics',
+        name: 'Международное непатентованное наименование',
+    },
+];
+
 class CategoryForm extends React.Component {
     constructor(props) {
         super(props);
@@ -31,7 +38,8 @@ class CategoryForm extends React.Component {
             delete: false,
             confirmation: false,
             category: false,
-            options: props.types.filter(type => ((type.key === 'select') || (type.key === 'multiselect')) ).map(type => type.id)
+            options: props.types.filter(type => ((type.key === 'select') || (type.key === 'multiselect')) ).map(type => type.id),
+            dictionary: props.types.filter(type => (type.key === 'dictionary')).map(type => type.id)
         };
     }
 
@@ -74,8 +82,8 @@ class CategoryForm extends React.Component {
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options } }) : [],
-                    category: category ? (category.category ? category.category.id : '') : ''
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options, value: category.value } }) : [],
+                    category: category ? (category.category ? category.category.id : '') : '',
                 }}
                 validate = {values => {
                     const errors = {};
@@ -114,6 +122,12 @@ class CategoryForm extends React.Component {
                                         error.options[index].option = `Введите наименование`
                                     }
                                 })
+                            }
+                        }
+
+                        if (this.state.dictionary.includes(item.type)) {
+                            if (!item.hasOwnProperty('value') || (item.value.length === 0)) {
+                                error.value = `Выберите словарь`
                             }
                         }
 
@@ -243,38 +257,38 @@ class CategoryForm extends React.Component {
                                                                                     </Field>
                                                                                 </Grid>
                                                                                 <Grid item className={classes.fullWidth}>
-                                                                                    <FieldArray
-                                                                                        name={`attributes.${index}.options`}
-                                                                                        render={ arrayOptions => (
-                                                                                            <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
-                                                                                                {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (values.attributes[`${index}`].hasOwnProperty('options') && values.attributes[`${index}`].options.length > 0) && (
-                                                                                                    values.attributes[`${index}`].options.map((option, key) => (
-                                                                                                        <Grid item key={key} className={classes.fullWidth}>
-                                                                                                            <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
-                                                                                                                <Grid item sm={9} className={classes.fullWidth}>
-                                                                                                                    <Field
-                                                                                                                        fullWidth
-                                                                                                                        name={`attributes.${index}.options.${key}.option`}
-                                                                                                                        type="text"
-                                                                                                                        label="Вариант"
-                                                                                                                        component={ TextField }
-                                                                                                                    />
-                                                                                                                </Grid>
-                                                                                                                <Grid item>
-                                                                                                                    <IconButton
-                                                                                                                        onClick={() => arrayOptions.remove(key) }
-                                                                                                                        color="primary"
-                                                                                                                        aria-label="Удалить"
-                                                                                                                        component="span"
-                                                                                                                    >
-                                                                                                                        <Clear />
-                                                                                                                    </IconButton>
+                                                                                    {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (
+                                                                                        <FieldArray
+                                                                                            name={`attributes.${index}.options`}
+                                                                                            render={ arrayOptions => (
+                                                                                                <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
+                                                                                                    {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (values.attributes[`${index}`].hasOwnProperty('options') && values.attributes[`${index}`].options.length > 0) && (
+                                                                                                        values.attributes[`${index}`].options.map((option, key) => (
+                                                                                                            <Grid item key={key} className={classes.fullWidth}>
+                                                                                                                <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
+                                                                                                                    <Grid item sm={9} className={classes.fullWidth}>
+                                                                                                                        <Field
+                                                                                                                            fullWidth
+                                                                                                                            name={`attributes.${index}.options.${key}.option`}
+                                                                                                                            type="text"
+                                                                                                                            label="Вариант"
+                                                                                                                            component={ TextField }
+                                                                                                                        />
+                                                                                                                    </Grid>
+                                                                                                                    <Grid item>
+                                                                                                                        <IconButton
+                                                                                                                            onClick={() => arrayOptions.remove(key) }
+                                                                                                                            color="primary"
+                                                                                                                            aria-label="Удалить"
+                                                                                                                            component="span"
+                                                                                                                        >
+                                                                                                                            <Clear />
+                                                                                                                        </IconButton>
+                                                                                                                    </Grid>
                                                                                                                 </Grid>
                                                                                                             </Grid>
-                                                                                                        </Grid>
-                                                                                                    ))
-                                                                                                )}
-                                                                                                {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (
+                                                                                                        ))
+                                                                                                    )}
                                                                                                     <Grid item className={classes.fullWidth}>
                                                                                                         <IconButton
                                                                                                             onClick={() => arrayOptions.push({ option: '' })}
@@ -285,10 +299,30 @@ class CategoryForm extends React.Component {
                                                                                                             <Add />
                                                                                                         </IconButton>
                                                                                                     </Grid>
-                                                                                                )}
-                                                                                            </Grid>
-                                                                                        )}
-                                                                                    />
+                                                                                                </Grid>
+                                                                                            )}
+                                                                                        />
+                                                                                    )}
+                                                                                    {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.dictionary.includes(values.attributes[`${index}`].type)) &&
+                                                                                        <Field
+                                                                                            fullWidth
+                                                                                            type="text"
+                                                                                            name={`attributes.${index}.value`}
+                                                                                            label="Словари"
+                                                                                            select
+                                                                                            variant="standard"
+                                                                                            component={ TextField }
+                                                                                            InputLabelProps={{
+                                                                                                shrink: true,
+                                                                                            }}
+                                                                                        >
+                                                                                            {dictionaries.map(option => (
+                                                                                                <MenuItem key={option.key} value={option.key}>
+                                                                                                    { option.name }
+                                                                                                </MenuItem>
+                                                                                            ))}
+                                                                                        </Field>
+                                                                                    }
                                                                                 </Grid>
                                                                                 <Grid item className={classes.fullWidth}>
                                                                                     <FormControlLabel
@@ -307,7 +341,7 @@ class CategoryForm extends React.Component {
                                                     )}
                                                     <Grid item className={classes.fullWidth}>
                                                         <Button
-                                                            onClick={() => arrayHelpers.push({ name: '', type: '', required: false})}
+                                                            onClick={() => arrayHelpers.push({ name: '', type: '', required: false, value: ''})}
                                                             aria-label={`Добавить`}
                                                             color="primary"
                                                             endIcon={<PlaylistAdd />}
@@ -419,7 +453,7 @@ class CategoryForm extends React.Component {
                                     )
                                     : (
                                         <DialogActions>
-                                            < Button
+                                            <Button
                                                 disabled={ isSubmitting }
                                                 onClick={ handleSubmit }
                                                 color="primary"

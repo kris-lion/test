@@ -7,6 +7,7 @@ use App\Http\Requests\FilterRequest;
 use App\Http\Requests\Item\ItemRequest;
 use App\Http\Resources\Item\Item as ItemResource;
 use App\Models\Category\Category;
+use App\Models\Dictionary\Generic;
 use App\Models\Item;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -97,6 +98,18 @@ class ItemController extends Controller
                                    'value'   => json_encode($attributes[$attribute->id])
                                ]);
                                break;
+                           case 'dictionary':
+                               $attribute->values()->create([
+                                   'item_id' => $item->id,
+                                   'value'   => trim($attributes[$attribute->id])
+                               ]);
+
+                               if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [trim(strtolower($attributes[$attribute->id]))])->first()) {
+                                   Generic::create([
+                                       'name' => trim($attributes[$attribute->id])
+                                   ]);
+                               }
+                               break;
                            default:
                                $attribute->values()->create([
                                    'item_id' => $item->id,
@@ -162,6 +175,24 @@ class ItemController extends Controller
                                         $attribute->values()->create([
                                             'item_id' => $item->id,
                                             'value'   => json_encode($attributes[$attribute->id])
+                                        ]);
+                                    }
+                                    break;
+                                case 'dictionary':
+                                    if ($value) {
+                                        $value->update([
+                                            'value'   => trim($attributes[$attribute->id])
+                                        ]);
+                                    } else {
+                                        $attribute->values()->create([
+                                            'item_id' => $item->id,
+                                            'value'   => trim($attributes[$attribute->id])
+                                        ]);
+                                    }
+
+                                    if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [trim(strtolower($attributes[$attribute->id]))])->first()) {
+                                        Generic::create([
+                                            'name' => trim($attributes[$attribute->id])
                                         ]);
                                     }
                                     break;

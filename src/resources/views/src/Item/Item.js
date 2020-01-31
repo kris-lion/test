@@ -14,6 +14,7 @@ import { ItemActions } from "./actions/item";
 import { ItemForm } from "./components/ItemForm";
 import { UnitActions } from "../Category/actions/Unit/unit";
 import { SystemActions } from "../App/actions/system";
+import { DictionaryActions } from "../Dictionary/actions/dictionary";
 
 const style = theme => ({
     field: {
@@ -49,7 +50,8 @@ class Item extends React.Component {
             dialog: false,
             page: 0,
             rowsPerPage: 10,
-            columns: []
+            columns: [],
+            dictionaries: {}
         };
     }
 
@@ -82,14 +84,19 @@ class Item extends React.Component {
         }
 
         const handleSave = (values, id = null) => {
-            const { actions } = this.props
+            const { actions, dictionary } = this.props
             const { category } = this.state
 
             if (id) {
-                return actions.save(id, values)
+                return actions.save(id, values).then(
+                    () => {
+                        return dictionary.generics()
+                    }
+                )
             } else {
                 return actions.add(values).then(
                     () => {
+                        dictionary.generics()
                         if (category) {
                             return actions.items({page: page + 1, limit: rowsPerPage, category: category.id})
                         }
@@ -99,7 +106,7 @@ class Item extends React.Component {
         }
 
         const handleChange = event => {
-            const { actions } = this.props
+            const { actions, dictionary } = this.props
 
             const category = event.target.value
 
@@ -109,16 +116,31 @@ class Item extends React.Component {
 
             return actions.items({ page: 1, category: category.id }).then(() => {
                 if (category.hasOwnProperty('attributes')) {
-                    this.setState({
-                        columns: category.attributes.map((attribute) => {
-                            return {
-                                id: attribute.id,
-                                label: attribute.name,
-                                align: 'center',
-                                format: value => value.toLocaleString()
-                            }
+                    let dictionaries  = this.state.dictionaries
+                    let columns = []
+
+                    category.attributes.forEach((attribute) => {
+                        columns.push({
+                            id: attribute.id,
+                            label: attribute.name,
+                            align: 'center',
+                            format: value => value.toLocaleString()
                         })
+
+                        if (attribute.type.key === 'dictionary') {
+                            switch (attribute.value) {
+                                case 'generics':
+                                    if (!dictionaries.hasOwnProperty('generics')) {
+                                        dictionary.generics()
+                                    }
+                                    break
+                                default:
+                                    break
+                            }
+                        }
                     })
+
+                    this.setState({ columns: columns, dictionaries: dictionaries })
                 }
             })
         };
@@ -284,6 +306,7 @@ function mapDispatchToProps(dispatch) {
         dispatch,
         actions: bindActionCreators(ItemActions, dispatch),
         system: bindActionCreators(SystemActions, dispatch),
+        dictionary: bindActionCreators(DictionaryActions, dispatch),
         unit: bindActionCreators(UnitActions, dispatch)
     }
 }

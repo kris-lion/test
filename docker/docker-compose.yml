@@ -76,7 +76,12 @@ services:
     ports:
       - 30092:9200
     volumes:
-      - ./var/elastic:/usr/share/elasticsearch/data
+      - /usr/share/elasticsearch/data
+    environment:
+      - xpack.ml.enabled=false
+      - bootstrap.memory_lock=false
+      - discovery.seed_hosts=elasticsearch
+      - cluster.initial_master_nodes=elasticsearch
     networks:
       - app
 networks:

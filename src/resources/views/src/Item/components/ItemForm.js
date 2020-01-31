@@ -17,6 +17,7 @@ import { FieldBoolean } from "../../Category/components/Attribute/FieldBoolean";
 import { FieldSelect } from "../../Category/components/Attribute/FieldSelect";
 import { FieldMultiselect } from "../../Category/components/Attribute/FieldMultiselect";
 import { FieldGeneric } from "../../Category/components/Attribute/FieldGeneric";
+import { FieldDictionary } from "../../Category/components/Attribute/FieldDictionary";
 
 const style = theme => ({
     dialog: {
@@ -67,6 +68,10 @@ class ItemForm extends React.Component {
                         attributes.push({ Field: FieldGeneric, attribute: attribute })
                         values[`${attribute.id}`] = []
                         break
+                    case 'dictionary':
+                        attributes.push({ Field: FieldDictionary, attribute: attribute })
+                        values[`${attribute.id}`] = ''
+                        break
                     default:
                         break
                 }
@@ -107,14 +112,41 @@ class ItemForm extends React.Component {
         const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
         const { category } = this.state
 
-        const attribute = (item, items = [], errors = []) => {
+        const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched) => {
             const { Field, attribute } = item
 
-            return <Field id={ attribute.id } label={ attribute.name } items = { items } errors = { errors }/>
+            return <Field id={ attribute.id } label={ attribute.name } items = { items } values = { values } errors = { errors } setFieldValue = { setFieldValue } setTouched = { setTouched } />
+        }
+
+        const getItems = (attribute) => {
+            const { dictionaries } = this.props
+
+            let items = []
+
+            switch (attribute.type.key) {
+                case 'select':
+                    items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    break
+                case 'multiselect':
+                    items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    break
+                case 'dictionary':
+                    switch (attribute.value) {
+                        case 'generics':
+                            items = dictionaries.generics
+                            break
+                        default:
+                            break
+                    }
+                    break
+                default:
+                    break
+            }
+
+            return items
         }
 
         return (
-
             <Formik
                 enableReinitialize={ true }
                 initialValues = {{...{
@@ -198,6 +230,7 @@ class ItemForm extends React.Component {
                       handleReset,
                       handleSubmit,
                       setFieldValue,
+                      setTouched,
                       isSubmitting
                   }) => (
                     <Form>
@@ -238,7 +271,14 @@ class ItemForm extends React.Component {
                                     {
                                         this.state.attributes.map((item, index) => (
                                             <Grid item sm={8} key={index} className={classes.fullWidth}>
-                                                { attribute(item, ((item.attribute.type.key === 'select') || (item.attribute.type.key === 'multiselect')) ? item.attribute.options.map(option => { return { id: option.id, name: option.option } }) :  values.attributes[item.attribute.id], errors) }
+                                                {attribute(
+                                                    item,
+                                                    getItems(item.attribute),
+                                                    this.state.values,
+                                                    errors,
+                                                    setFieldValue,
+                                                    setTouched
+                                                )}
                                             </Grid>
                                         ))
                                     }
@@ -300,7 +340,7 @@ function mapStateToProps(state) {
     const { categories } = state.system
 
     return {
-        categories
+        categories, dictionaries: state.dictionary
     }
 }
 

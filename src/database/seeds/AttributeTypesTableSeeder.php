@@ -43,6 +43,11 @@ class AttributeTypesTableSeeder extends Seeder
         ]);
 
         Type::create([
+            'name' => 'Словарь',
+            'key'  => 'dictionary'
+        ]);
+
+        Type::create([
             'name'   => 'Массив',
             'key'    => 'array',
             'active' => false
@@ -56,7 +61,8 @@ class AttributeTypesTableSeeder extends Seeder
 
         Type::create([
             'name' => 'Международное непатентованное наименование',
-            'key'  => 'generic'
+            'key'  => 'generic',
+            'active' => false
         ]);
     }
 }
