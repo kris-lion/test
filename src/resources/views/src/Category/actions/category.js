@@ -69,11 +69,11 @@ function save (id, values) {
     })
 }
 
-function remove (id) {
+function remove (id, params = { }) {
     return dispatch => new Promise((resolve, reject) => {
         dispatch({ type: 'CATEGORY_DELETE_REQUEST' })
 
-        CategoryService.remove(id)
+        CategoryService.remove(id, params)
             .then(
                 () => {
                     dispatch({ type: 'CATEGORY_DELETE_SUCCESS', payload: id })

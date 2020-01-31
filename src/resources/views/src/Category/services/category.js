@@ -43,9 +43,10 @@ function save (id, values) {
         })
 }
 
-function remove (id) {
+function remove (id, params = null) {
     const options = {
-        method: 'DELETE'
+        method: 'DELETE',
+        params: params
     }
 
     return HttpService.http(`/category/${id}`, options, true)

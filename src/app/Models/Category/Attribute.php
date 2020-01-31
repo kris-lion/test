@@ -2,6 +2,7 @@
 
 namespace App\Models\Category;
 
+use App\Models\Category\Attribute\Option;
 use App\Models\Category\Attribute\Type;
 use App\Models\Category\Attribute\Value;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ class Attribute extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'category_id', 'type_id', 'required'
+        'name', 'category_id', 'type_id', 'required', 'value'
     ];
 
     public $timestamps = false;
@@ -32,5 +33,10 @@ class Attribute extends Model
     public function values()
     {
         return $this->hasMany(Value::class, 'attribute_id', 'id');
+    }
+
+    public function options()
+    {
+        return $this->hasMany(Option::class, 'attribute_id', 'id');
     }
 }

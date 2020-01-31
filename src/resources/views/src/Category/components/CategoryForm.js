@@ -7,9 +7,9 @@ import {
     Button, CircularProgress, MenuItem,
     Dialog, DialogTitle, DialogContent, DialogActions, Grid,
     FormControlLabel, IconButton,
-    Card, CardContent
+    Card, CardContent, Select, FormHelperText, FormControl
 } from '@material-ui/core'
-import { PlaylistAdd, DeleteSweep } from '@material-ui/icons';
+import { PlaylistAdd, DeleteSweep, Add, Clear } from '@material-ui/icons';
 import {
     TextField, Switch
 } from 'formik-material-ui';
@@ -23,23 +23,67 @@ const style = theme => ({
     }
 })
 
+const dictionaries = [
+    {
+        key: 'generics',
+        name: 'Международное непатентованное наименование',
+    },
+];
+
 class CategoryForm extends React.Component {
     constructor(props) {
         super(props);
 
         this.state = {
-            delete: false
+            delete: false,
+            confirmation: false,
+            category: false,
+            options: props.types.filter(type => ((type.key === 'select') || (type.key === 'multiselect')) ).map(type => type.id),
+            dictionary: props.types.filter(type => (type.key === 'dictionary')).map(type => type.id)
         };
     }
 
     render() {
-        const { handleClose, handleDelete, handleSave, open, category, types, classes, dispatch } = this.props
+        const { handleClose, handleDelete, handleSave, open, category, categories, types, classes, dispatch } = this.props
+
+        const assembly = (options, parent = 0, level = 0, disabled = false) => {
+            let result = []
+
+            if (options.hasOwnProperty(parent)) {
+                options[parent].forEach(option => {
+                    result.push(<MenuItem key={ option.id } disabled={ disabled || (category ? (option.id === category.id) : false) } value={ option.id }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + option.name }</MenuItem>)
+
+                    result = result.concat(assembly(options, option.id, level + 1, disabled ? disabled : (category ? (option.id === category.id) : false)))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = (options, full = true) => {
+            let tmp = {}
+
+            options.forEach(option => {
+                if (!tmp.hasOwnProperty((option.category !== null) ? option.category.id : 0)) {
+                    tmp[(option.category !== null) ? option.category.id : 0] = []
+                }
+
+                tmp[(option.category !== null) ? option.category.id : 0].push(option)
+            })
+
+            if (full) {
+                return [<MenuItem key={0} value="">{'\u00A0\u00A0\u00A0\u00A0'}</MenuItem>].concat(assembly(tmp))
+            } else {
+                return assembly(tmp)
+            }
+        }
 
         return (
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required } }) : []
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options, value: category.value } }) : [],
+                    category: category ? (category.category ? category.category.id : '') : '',
                 }}
                 validate = {values => {
                     const errors = {};
@@ -59,6 +103,32 @@ class CategoryForm extends React.Component {
 
                         if (!item.type) {
                             error.type = 'Выберите тип'
+                        }
+
+                        if (this.state.options.includes(item.type)) {
+                            if (!item.hasOwnProperty('options') || (item.options.length === 0)) {
+                                error.option = true
+                            } else {
+                                item.options.forEach((val, index) => {
+                                    if (!val.option.length) {
+                                        if (!error.hasOwnProperty('options')) {
+                                            error.options = {}
+                                        }
+
+                                        if (!error.options.hasOwnProperty(index)) {
+                                            error.options[index] = {}
+                                        }
+
+                                        error.options[index].option = `Введите наименование`
+                                    }
+                                })
+                            }
+                        }
+
+                        if (this.state.dictionary.includes(item.type)) {
+                            if (!item.hasOwnProperty('value') || (item.value.length === 0)) {
+                                error.value = `Выберите словарь`
+                            }
                         }
 
                         if (!!Object.keys(error).length) {
@@ -116,6 +186,22 @@ class CategoryForm extends React.Component {
                                             component={ TextField }
                                         />
                                     </Grid>
+                                    <Grid item sm={8} className={classes.fullWidth}>
+                                        <Field
+                                            fullWidth
+                                            type="text"
+                                            name="category"
+                                            label="Родительская категория"
+                                            select
+                                            variant="standard"
+                                            component={ TextField }
+                                            InputLabelProps={{
+                                                shrink: true
+                                            }}
+                                        >
+                                            { getCategoriesTree(categories).map(el => el) }
+                                        </Field>
+                                    </Grid>
                                     <FieldArray
                                         name="attributes"
                                         render={ arrayHelpers => (
@@ -171,6 +257,74 @@ class CategoryForm extends React.Component {
                                                                                     </Field>
                                                                                 </Grid>
                                                                                 <Grid item className={classes.fullWidth}>
+                                                                                    {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (
+                                                                                        <FieldArray
+                                                                                            name={`attributes.${index}.options`}
+                                                                                            render={ arrayOptions => (
+                                                                                                <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
+                                                                                                    {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.options.includes(values.attributes[`${index}`].type)) && (values.attributes[`${index}`].hasOwnProperty('options') && values.attributes[`${index}`].options.length > 0) && (
+                                                                                                        values.attributes[`${index}`].options.map((option, key) => (
+                                                                                                            <Grid item key={key} className={classes.fullWidth}>
+                                                                                                                <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
+                                                                                                                    <Grid item sm={9} className={classes.fullWidth}>
+                                                                                                                        <Field
+                                                                                                                            fullWidth
+                                                                                                                            name={`attributes.${index}.options.${key}.option`}
+                                                                                                                            type="text"
+                                                                                                                            label="Вариант"
+                                                                                                                            component={ TextField }
+                                                                                                                        />
+                                                                                                                    </Grid>
+                                                                                                                    <Grid item>
+                                                                                                                        <IconButton
+                                                                                                                            onClick={() => arrayOptions.remove(key) }
+                                                                                                                            color="primary"
+                                                                                                                            aria-label="Удалить"
+                                                                                                                            component="span"
+                                                                                                                        >
+                                                                                                                            <Clear />
+                                                                                                                        </IconButton>
+                                                                                                                    </Grid>
+                                                                                                                </Grid>
+                                                                                                            </Grid>
+                                                                                                        ))
+                                                                                                    )}
+                                                                                                    <Grid item className={classes.fullWidth}>
+                                                                                                        <IconButton
+                                                                                                            onClick={() => arrayOptions.push({ option: '' })}
+                                                                                                            color={(errors.hasOwnProperty('attributes') && (errors.attributes.hasOwnProperty(`${index}`) && errors.attributes[`${index}`] !== undefined) && errors.attributes[`${index}`].option) ? 'secondary' : 'primary'}
+                                                                                                            aria-label="Добавить"
+                                                                                                            component="span"
+                                                                                                        >
+                                                                                                            <Add />
+                                                                                                        </IconButton>
+                                                                                                    </Grid>
+                                                                                                </Grid>
+                                                                                            )}
+                                                                                        />
+                                                                                    )}
+                                                                                    {(values.attributes[`${index}`].hasOwnProperty('type') && !!values.attributes[`${index}`].type) && (this.state.dictionary.includes(values.attributes[`${index}`].type)) &&
+                                                                                        <Field
+                                                                                            fullWidth
+                                                                                            type="text"
+                                                                                            name={`attributes.${index}.value`}
+                                                                                            label="Словари"
+                                                                                            select
+                                                                                            variant="standard"
+                                                                                            component={ TextField }
+                                                                                            InputLabelProps={{
+                                                                                                shrink: true,
+                                                                                            }}
+                                                                                        >
+                                                                                            {dictionaries.map(option => (
+                                                                                                <MenuItem key={option.key} value={option.key}>
+                                                                                                    { option.name }
+                                                                                                </MenuItem>
+                                                                                            ))}
+                                                                                        </Field>
+                                                                                    }
+                                                                                </Grid>
+                                                                                <Grid item className={classes.fullWidth}>
                                                                                     <FormControlLabel
                                                                                         control={
                                                                                             <Field label="Обязательный" name={`attributes.${index}.required`} component={ Switch } />
@@ -187,7 +341,7 @@ class CategoryForm extends React.Component {
                                                     )}
                                                     <Grid item className={classes.fullWidth}>
                                                         <Button
-                                                            onClick={() => arrayHelpers.push({ name: '', type: '', required: false})}
+                                                            onClick={() => arrayHelpers.push({ name: '', type: '', required: false, value: ''})}
                                                             aria-label={`Добавить`}
                                                             color="primary"
                                                             endIcon={<PlaylistAdd />}
@@ -201,50 +355,115 @@ class CategoryForm extends React.Component {
                                     />
                                 </Grid>
                             </DialogContent>
-                            <DialogActions>
-                                {
-                                    category
-                                        ? (
-                                            <DialogActions>
-                                                <Button
-                                                    disabled={ isSubmitting || this.state.delete }
-                                                    onClick={() => {
-                                                        this.setState({ delete: true })
-                                                        handleDelete(category.id).then(
-                                                            () => {
-                                                                handleClose()
+                            {
+                                category
+                                    ? (
+                                        <DialogActions>
+                                            {
+                                                this.state.confirmation
+                                                    ?
+                                                        this.state.category
+                                                            ? <FormControl className={classes.fullWidth} error>
+                                                                <Select fullWidth value={0} error
+                                                                    onChange={event => {
+                                                                        this.setState({confirmation: false, category: false})
+                                                                        handleDelete(category.id, { type: 'category', category: event.target.value}).then(
+                                                                            () => {
+                                                                                handleClose()
+                                                                            }
+                                                                        )
+                                                                    }}
+                                                                >
+                                                                    { getCategoriesTree(categories, false).map(el => el) }
+                                                                </Select>
+                                                                <FormHelperText>Выберите категорию для переноса эталонов</FormHelperText>
+                                                            </FormControl>
+                                                            : <FormControl className={classes.fullWidth} error>
+                                                                <Select fullWidth value="" error
+                                                                        onChange={event => {
+                                                                            const type = event.target.value
+
+                                                                            if (type === 'category') {
+                                                                                this.setState({ category: true })
+                                                                            } else {
+                                                                                this.setState({confirmation: false})
+                                                                                handleDelete(category.id, { type: type }).then(
+                                                                                    () => {
+                                                                                        handleClose()
+                                                                                    }
+                                                                                )
+                                                                            }
+                                                                        }}
+                                                                >
+                                                                    <MenuItem value="category">Выбрать категорию для переноса эталонов</MenuItem>
+                                                                    <MenuItem value="connect">Оставить связь эталонов с удалённой категорией</MenuItem>
+                                                                    <MenuItem value="empty">Оставить эталоны без категории</MenuItem>
+                                                                </Select>
+                                                                <FormHelperText>В категории присутствуют эталоны, необходимо выбрать тип удаления</FormHelperText>
+                                                            </FormControl>
+                                                    : <Button
+                                                        disabled={isSubmitting || this.state.delete}
+                                                        onClick={() => {
+                                                            this.setState({delete: true})
+                                                            handleDelete(category.id).then(
+                                                                val => {
+                                                                    if (val) {
+                                                                        this.setState({confirmation: true})
+                                                                    } else {
+                                                                        handleClose()
+                                                                    }
+                                                                }
+                                                            )
+                                                        }}
+                                                        color="secondary"
+                                                        type="submit"
+                                                    >
+                                                        {
+                                                            this.state.delete
+                                                                ? <CircularProgress size={24}/>
+                                                                : 'Удалить'
+                                                        }
+                                                    </Button>
+                                            }
+                                            {
+                                                this.state.confirmation
+                                                    ? < Button
+                                                        onClick={() => {
+                                                            if (this.state.category) {
+                                                                this.setState({ category: false })
+                                                            } else {
+                                                                this.setState({ delete: false, confirmation: false })
                                                             }
-                                                        )
-                                                    }}
-                                                    color="secondary"
-                                                    type="submit"
-                                                >
-                                                    { this.state.delete ? <CircularProgress size={24} /> : 'Удалить' }
-                                                </Button>
-                                                < Button
-                                                    disabled={ isSubmitting || this.state.delete }
-                                                    onClick={ handleSubmit }
-                                                    color="primary"
-                                                    type="submit"
-                                                >
-                                                    { isSubmitting ? <CircularProgress size={24} /> : 'Сохранить' }
-                                                </Button>
-                                            </DialogActions>
-                                        )
-                                        : (
-                                            <DialogActions>
-                                                < Button
-                                                    disabled={ isSubmitting }
-                                                    onClick={ handleSubmit }
-                                                    color="primary"
-                                                    type="submit"
-                                                >
-                                                    { isSubmitting ? <CircularProgress size={24} /> : 'Добавить' }
-                                                </Button>
-                                            </DialogActions>
-                                        )
-                                }
-                            </DialogActions>
+                                                        }}
+                                                        color="primary"
+                                                        type="button"
+                                                    >
+                                                        Отменить
+                                                    </Button>
+                                                    : < Button
+                                                        disabled={isSubmitting || this.state.delete}
+                                                        onClick={handleSubmit}
+                                                        color="primary"
+                                                        type="submit"
+                                                    >
+                                                        {isSubmitting ? <CircularProgress size={24}/> : 'Сохранить'}
+                                                    </Button>
+                                            }
+                                        </DialogActions>
+                                    )
+                                    : (
+                                        <DialogActions>
+                                            <Button
+                                                disabled={ isSubmitting }
+                                                onClick={ handleSubmit }
+                                                color="primary"
+                                                type="submit"
+                                            >
+                                                { isSubmitting ? <CircularProgress size={24} /> : 'Добавить' }
+                                            </Button>
+                                        </DialogActions>
+                                    )
+                            }
                         </Dialog>
                     </Form>
                 )}

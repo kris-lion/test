@@ -5,9 +5,12 @@ namespace App\Models;
 use App\Models\Category\Attribute\Value;
 use App\Models\Category\Category;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Item extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'items';
 
     /**

@@ -33,6 +33,21 @@ class AttributeTypesTableSeeder extends Seeder
         ]);
 
         Type::create([
+            'name' => 'Выбор из списка',
+            'key'  => 'select'
+        ]);
+
+        Type::create([
+            'name' => 'Выбор из списка нескольких вариантов',
+            'key'  => 'multiselect'
+        ]);
+
+        Type::create([
+            'name' => 'Словарь',
+            'key'  => 'dictionary'
+        ]);
+
+        Type::create([
             'name'   => 'Массив',
             'key'    => 'array',
             'active' => false
@@ -46,7 +61,8 @@ class AttributeTypesTableSeeder extends Seeder
 
         Type::create([
             'name' => 'Международное непатентованное наименование',
-            'key'  => 'generic'
+            'key'  => 'generic',
+            'active' => false
         ]);
     }
 }

@@ -12,7 +12,9 @@ import { Check } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import { ItemActions } from "./actions/item";
 import { ItemForm } from "./components/ItemForm";
-import { CategoryActions } from "../Category/actions/category";
+import { UnitActions } from "../Category/actions/Unit/unit";
+import { SystemActions } from "../App/actions/system";
+import { DictionaryActions } from "../Dictionary/actions/dictionary";
 
 const style = theme => ({
     field: {
@@ -48,14 +50,16 @@ class Item extends React.Component {
             dialog: false,
             page: 0,
             rowsPerPage: 10,
-            columns: []
+            columns: [],
+            dictionaries: {}
         };
     }
 
     componentDidMount () {
-        const { category } = this.props
+        const { system, unit } = this.props
 
-        category.categories();
+        unit.units();
+        system.categories();
     }
 
     componentWillUnmount() {
@@ -80,14 +84,19 @@ class Item extends React.Component {
         }
 
         const handleSave = (values, id = null) => {
-            const { actions } = this.props
+            const { actions, dictionary } = this.props
             const { category } = this.state
 
             if (id) {
-                return actions.save(id, values)
+                return actions.save(id, values).then(
+                    () => {
+                        return dictionary.generics()
+                    }
+                )
             } else {
                 return actions.add(values).then(
                     () => {
+                        dictionary.generics()
                         if (category) {
                             return actions.items({page: page + 1, limit: rowsPerPage, category: category.id})
                         }
@@ -97,7 +106,7 @@ class Item extends React.Component {
         }
 
         const handleChange = event => {
-            const { actions } = this.props
+            const { actions, dictionary } = this.props
 
             const category = event.target.value
 
@@ -107,16 +116,31 @@ class Item extends React.Component {
 
             return actions.items({ page: 1, category: category.id }).then(() => {
                 if (category.hasOwnProperty('attributes')) {
-                    this.setState({
-                        columns: category.attributes.map((attribute) => {
-                            return {
-                                id: attribute.id,
-                                label: attribute.name,
-                                align: 'center',
-                                format: value => value.toLocaleString()
-                            }
+                    let dictionaries  = this.state.dictionaries
+                    let columns = []
+
+                    category.attributes.forEach((attribute) => {
+                        columns.push({
+                            id: attribute.id,
+                            label: attribute.name,
+                            align: 'center',
+                            format: value => value.toLocaleString()
                         })
+
+                        if (attribute.type.key === 'dictionary') {
+                            switch (attribute.value) {
+                                case 'generics':
+                                    if (!dictionaries.hasOwnProperty('generics')) {
+                                        dictionary.generics()
+                                    }
+                                    break
+                                default:
+                                    break
+                            }
+                        }
                     })
+
+                    this.setState({ columns: columns, dictionaries: dictionaries })
                 }
             })
         };
@@ -148,7 +172,10 @@ class Item extends React.Component {
                         return JSON.parse(value.value).map(el => {
                             return el.name
                         }).join(', ')
-                        break
+                    case 'select':
+                        return value.attribute.options.filter(el => parseInt(el.id) === parseInt(value.value)).map(el => { return el.option }).join(', ')
+                    case 'multiselect':
+                        return value.attribute.options.filter(el => JSON.parse(value.value).includes(el.id)).map(el => { return el.option }).join(', ')
                     case 'boolean':
                         return <Check />
                     default:
@@ -157,6 +184,33 @@ class Item extends React.Component {
             }
 
             return null
+        }
+
+        const assembly = (categories, parent = 0, level = 0) => {
+            let result = []
+
+            if (categories.hasOwnProperty(parent)) {
+                categories[parent].forEach(category => {
+                    result.push(<MenuItem key={ category.id } value={ category }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }</MenuItem>)
+
+                    result = result.concat(assembly(categories, category.id, level + 1))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = categories => {
+            let tmp = {}
+            categories.forEach(category => {
+                if (!tmp.hasOwnProperty((category.category !== null) ? category.category.id : 0)) {
+                    tmp[(category.category !== null) ? category.category.id : 0] = []
+                }
+
+                tmp[(category.category !== null) ? category.category.id : 0].push(category)
+            })
+
+            return assembly(tmp)
         }
 
         return (
@@ -170,11 +224,9 @@ class Item extends React.Component {
                                 value={ category }
                                 onChange={ handleChange }
                             >
-                                {categories.data.map(option => (
-                                    <MenuItem key={ option.id } value={ option }>
-                                        {option.name}
-                                    </MenuItem>
-                                ))}
+                                {
+                                    getCategoriesTree(categories).map(el => el)
+                                }
                             </Select>
                         </Grid>
                     </Grid>
@@ -242,7 +294,7 @@ class Item extends React.Component {
 
 function mapStateToProps(state) {
     const { items } = state.item
-    const { categories } = state.category
+    const { categories } = state.system
 
     return {
         items, categories
@@ -253,7 +305,9 @@ function mapDispatchToProps(dispatch) {
     return {
         dispatch,
         actions: bindActionCreators(ItemActions, dispatch),
-        category: bindActionCreators(CategoryActions, dispatch)
+        system: bindActionCreators(SystemActions, dispatch),
+        dictionary: bindActionCreators(DictionaryActions, dispatch),
+        unit: bindActionCreators(UnitActions, dispatch)
     }
 }
 

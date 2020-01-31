@@ -15,10 +15,11 @@ class CreateItemsTable extends Migration
     {
         Schema::create('items', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('category_id')->unsigned()->comment('Идентификатор категории');
+            $table->unsignedBigInteger('category_id')->nullable()->unsigned()->comment('Идентификатор категории');
             $table->foreign('category_id')->references('id')->on('categories')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->timestamps();
+            $table->softDeletesTz();
         });
     }
 

@@ -23,6 +23,7 @@ class CreateAttributesTable extends Migration
             $table->foreign('category_id')->references('id')->on('categories')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->boolean('required')->default(false)->comment('Признак обязательного значения');
+            $table->string('value')->nullable()->comment('Дополнительное значение');
             $table->timestamps();
         });
     }

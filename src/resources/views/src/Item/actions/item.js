@@ -2,6 +2,7 @@ import { ItemService } from '../services/item'
 
 export const ItemActions = {
     items,
+    count,
     add,
     save,
     remove
@@ -29,6 +30,24 @@ function items (params = { }) {
     })
 }
 
+function count (params = { }) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'FILLING', payload: true })
+
+        ItemService.count(params)
+            .then(
+                response => {
+                    dispatch({ type: 'FILLING', payload: false })
+                    resolve(response.count)
+                },
+                error => {
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
+                    dispatch({ type: 'FILLING', payload: false })
+                    reject()
+                }
+            )
+    })
+}
 
 function add (values) {
     return dispatch => new Promise((resolve, reject) => {

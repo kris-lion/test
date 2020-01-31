@@ -16,5 +16,10 @@ class DatabaseSeeder extends Seeder
         $this->call(UsersTableSeeder::class);
 
         $this->call(AttributeTypesTableSeeder::class);
+        $this->call(CategoriesTableSeeder::class);
+
+        $this->call(UnitGroupsTableSeeder::class);
+        $this->call(UnitTypesTableSeeder::class);
+        $this->call(UnitsTableSeeder::class);
     }
 }

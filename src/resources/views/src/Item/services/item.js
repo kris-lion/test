@@ -2,6 +2,7 @@ import { HttpService } from '../../App/services/http'
 
 export const ItemService = {
     items,
+    count,
     add,
     save,
     remove
@@ -14,6 +15,18 @@ function items (params = null) {
     }
 
     return HttpService.http(`/items`, options, true)
+        .then(response => {
+            return response
+        })
+}
+
+function count (params = null) {
+    const options = {
+        method: 'GET',
+        params: params
+    }
+
+    return HttpService.http(`/items/count`, options, true)
         .then(response => {
             return response
         })

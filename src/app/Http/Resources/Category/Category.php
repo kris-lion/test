@@ -13,6 +13,7 @@ class Category extends JsonResource
             'id'         => $this->id,
             'name'       => $this->name,
             'attributes' => AttributeResource::collection($this->whenLoaded('attributes')),
+            'category'   => new Category($this->whenLoaded('category'))
         ];
     }
 }

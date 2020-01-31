@@ -12,6 +12,8 @@ import AddIcon from '@material-ui/icons/Add';
 import { CategoryActions } from "./actions/category";
 import { CategoryForm } from "./components/CategoryForm";
 import { TypeActions } from "./actions/Attribute/type";
+import { SystemActions } from "../App/actions/system";
+import { ItemActions } from "../Item/actions/item";
 
 const style = theme => ({
     field: {
@@ -59,10 +61,11 @@ class Category extends React.Component {
     }
 
     componentDidMount () {
-        const { actions, type } = this.props
+        const { actions, type, system } = this.props
         const { rowsPerPage } = this.state
 
         type.types();
+        system.categories();
 
         return actions.categories({ limit: rowsPerPage })
     }
@@ -74,27 +77,58 @@ class Category extends React.Component {
     }
 
     render() {
-        const { categories, classes } = this.props
+        const { categories, options, classes } = this.props
         const { category, dialog, page, rowsPerPage } = this.state
 
-        const handleDelete = (id) => {
-            const { actions } = this.props
+        const handleDelete = (id, params = null) => {
+            const { actions, item, system } = this.props
 
-            return actions.remove(id).then(
-                () => {
-                    return actions.categories({ page: page + 1, limit: rowsPerPage })
+            return new Promise((resolve, reject) => {
+                if (params) {
+                    return actions.remove(id, params).then(
+                        () => {
+                            system.categories();
+                            actions.categories({page: page + 1, limit: rowsPerPage})
+                            resolve()
+                        }
+                    )
+                } else {
+                    item.count({category: id})
+                        .then(
+                            count => {
+                                if (count > 0) {
+                                    resolve(count)
+                                } else {
+                                    return actions.remove(id).then(
+                                        () => {
+                                            system.categories();
+                                            actions.categories({page: page + 1, limit: rowsPerPage})
+                                            resolve()
+                                        }
+                                    )
+                                }
+                            },
+                            error => {
+                                reject()
+                            }
+                        )
                 }
-            )
+            })
         }
 
         const handleSave = (values, id = null) => {
-            const { actions } = this.props
+            const { actions, system } = this.props
 
             if (id) {
-                return actions.save(id, values)
+                return actions.save(id, values).then(
+                    () => {
+                        return system.categories();
+                    }
+                )
             } else {
                 return actions.add(values).then(
                     () => {
+                        system.categories();
                         return actions.categories({ page: page + 1, limit: rowsPerPage })
                     }
                 )
@@ -165,7 +199,7 @@ class Category extends React.Component {
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />
                 </Fab>
-                { dialog && <CategoryForm category = { category } open = { dialog } handleClose = {() => { this.setState({ dialog: false, category: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
+                { dialog && <CategoryForm category = { category } categories = { options } open = { dialog } handleClose = {() => { this.setState({ dialog: false, category: null }) }} handleDelete = { handleDelete } handleSave = { handleSave } /> }
             </Grid>
         )
     }
@@ -175,7 +209,7 @@ function mapStateToProps(state) {
     const { categories } = state.category
 
     return {
-        categories
+        categories, options: state.system.categories
     }
 }
 
@@ -183,6 +217,8 @@ function mapDispatchToProps(dispatch) {
     return {
         dispatch,
         actions: bindActionCreators(CategoryActions, dispatch),
+        item: bindActionCreators(ItemActions, dispatch),
+        system: bindActionCreators(SystemActions, dispatch),
         type: bindActionCreators(TypeActions, dispatch)
     }
 }

@@ -14,7 +14,10 @@ import { FieldString } from "../../Category/components/Attribute/FieldString";
 import { FieldInteger } from "../../Category/components/Attribute/FieldInteger";
 import { FieldDouble } from "../../Category/components/Attribute/FieldDouble";
 import { FieldBoolean } from "../../Category/components/Attribute/FieldBoolean";
+import { FieldSelect } from "../../Category/components/Attribute/FieldSelect";
+import { FieldMultiselect } from "../../Category/components/Attribute/FieldMultiselect";
 import { FieldGeneric } from "../../Category/components/Attribute/FieldGeneric";
+import { FieldDictionary } from "../../Category/components/Attribute/FieldDictionary";
 
 const style = theme => ({
     dialog: {
@@ -34,10 +37,8 @@ class ItemForm extends React.Component {
         let attributes = []
         let values = {}
 
-        const current = item ? item.category : category
-
-        if (Object.keys(current).length) {
-            current.attributes.forEach((attribute) => {
+        if (Object.keys(category).length) {
+            category.attributes.forEach((attribute) => {
                 switch(attribute.type.key) {
                     case 'string':
                         attributes.push({ Field: FieldString, attribute: attribute })
@@ -55,9 +56,21 @@ class ItemForm extends React.Component {
                         attributes.push({ Field: FieldBoolean, attribute: attribute })
                         values[`${attribute.id}`] = false
                         break
+                    case 'select':
+                        attributes.push({ Field: FieldSelect, attribute: attribute })
+                        values[`${attribute.id}`] = 0
+                        break
+                    case 'multiselect':
+                        attributes.push({ Field: FieldMultiselect, attribute: attribute })
+                        values[`${attribute.id}`] = []
+                        break
                     case 'generic':
                         attributes.push({ Field: FieldGeneric, attribute: attribute })
                         values[`${attribute.id}`] = []
+                        break
+                    case 'dictionary':
+                        attributes.push({ Field: FieldDictionary, attribute: attribute })
+                        values[`${attribute.id}`] = ''
                         break
                     default:
                         break
@@ -68,6 +81,9 @@ class ItemForm extends React.Component {
                 item.values.forEach(value => {
                     switch(value.attribute.type.key) {
                         case 'generic':
+                            values[`${value.attribute.id}`] = JSON.parse(value.value.replace(new RegExp('null', 'g'), '""'))
+                            break
+                        case 'multiselect':
                             values[`${value.attribute.id}`] = JSON.parse(value.value)
                             break
                         case 'boolean':
@@ -82,7 +98,7 @@ class ItemForm extends React.Component {
 
         this.state = {
             delete: false,
-            category: current,
+            category: item ? item.category : category,
             attributes: attributes,
             values: values
         };
@@ -96,14 +112,41 @@ class ItemForm extends React.Component {
         const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
         const { category } = this.state
 
-        const attribute = (item, items = [], errors = []) => {
+        const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched) => {
             const { Field, attribute } = item
 
-            return <Field id={ attribute.id } label={ attribute.name } items = { items } errors = { errors }/>
+            return <Field id={ attribute.id } label={ attribute.name } items = { items } values = { values } errors = { errors } setFieldValue = { setFieldValue } setTouched = { setTouched } />
+        }
+
+        const getItems = (attribute) => {
+            const { dictionaries } = this.props
+
+            let items = []
+
+            switch (attribute.type.key) {
+                case 'select':
+                    items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    break
+                case 'multiselect':
+                    items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    break
+                case 'dictionary':
+                    switch (attribute.value) {
+                        case 'generics':
+                            items = dictionaries.generics
+                            break
+                        default:
+                            break
+                    }
+                    break
+                default:
+                    break
+            }
+
+            return items
         }
 
         return (
-
             <Formik
                 enableReinitialize={ true }
                 initialValues = {{...{
@@ -145,6 +188,18 @@ class ItemForm extends React.Component {
                                     })
                                 }
                             }
+
+                            if (attribute.type.key === 'multiselect') {
+                                if (!!attribute.required && !values.attributes[`${attribute.id}`].length) {
+                                    errors.attributes[`${attribute.id}`] = `Выберите ${attribute.name.toLowerCase()}`
+                                }
+                            }
+
+                            if (attribute.type.key === 'select') {
+                                if (!!attribute.required && !values.attributes.hasOwnProperty(`${attribute.id}`)) {
+                                    errors.attributes[`${attribute.id}`] = `Выберите ${attribute.name.toLowerCase()}`
+                                }
+                            }
                         })
                     }
 
@@ -175,6 +230,7 @@ class ItemForm extends React.Component {
                       handleReset,
                       handleSubmit,
                       setFieldValue,
+                      setTouched,
                       isSubmitting
                   }) => (
                     <Form>
@@ -215,7 +271,14 @@ class ItemForm extends React.Component {
                                     {
                                         this.state.attributes.map((item, index) => (
                                             <Grid item sm={8} key={index} className={classes.fullWidth}>
-                                                { attribute(item, values.attributes[item.attribute.id], errors) }
+                                                {attribute(
+                                                    item,
+                                                    getItems(item.attribute),
+                                                    this.state.values,
+                                                    errors,
+                                                    setFieldValue,
+                                                    setTouched
+                                                )}
                                             </Grid>
                                         ))
                                     }
@@ -274,10 +337,10 @@ class ItemForm extends React.Component {
 }
 
 function mapStateToProps(state) {
-    const { categories } = state.category
+    const { categories } = state.system
 
     return {
-        categories: categories.data
+        categories, dictionaries: state.dictionary
     }
 }
 

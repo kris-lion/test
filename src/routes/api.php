@@ -18,6 +18,10 @@ Route::group(['middleware' => ['api']], function () {
     });
 
     Route::group(['middleware' => ['token']], function () {
+        Route::namespace('Dictionary')->prefix('/dictionary')->group(function () {
+            Route::get('/generics', 'DictionaryController@generics');
+        });
+
         Route::group(['middleware' => ['permission:role']], function () {
             Route::namespace('User\Auth')->group(function () {
                 Route::prefix('/user')->group(function () {
@@ -33,6 +37,10 @@ Route::group(['middleware' => ['api']], function () {
             });
         });
 
+        Route::namespace('Category\Unit')->group(function () {
+            Route::get('/units', 'UnitController@get');
+        });
+
         Route::group(['middleware' => ['permission:user']], function () {
             Route::get('/users', 'User\UserController@get');
 
@@ -44,7 +52,10 @@ Route::group(['middleware' => ['api']], function () {
         });
 
         Route::group(['middleware' => ['permission:reference']], function () {
-            Route::get('/items', 'Item\ItemController@get');
+            Route::namespace('Item')->prefix('/items')->group(function () {
+                Route::get('/', 'ItemController@get');
+                Route::get('/count', 'ItemController@count');
+            });
 
             Route::namespace('Item')->prefix('/item')->group(function () {
                 Route::post('/', 'ItemController@post');

@@ -4,19 +4,27 @@ namespace App\Models\Category;
 
 use App\Models\Item;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Category extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'categories';
 
     /**
      * @var array
      */
     protected $fillable = [
-        'name'
+        'name', 'category_id'
     ];
 
     public $timestamps = false;
+
+    public function category()
+    {
+        return $this->hasOne(Category::class, 'id', 'category_id');
+    }
 
     public function attributes()
     {
