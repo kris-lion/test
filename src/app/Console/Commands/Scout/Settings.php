@@ -13,88 +13,84 @@ class Settings extends Command
 
     protected $description = "Installing the server settings elasticsearch.";
 
-    protected $elastic;
+    protected $client;
 
     public function __construct()
     {
         parent::__construct();
-        $this->elastic = ClientBuilder::fromConfig(config('scout.elastic.config'));
+        $this->client = ClientBuilder::fromConfig(config('scout.elastic.config'));
     }
 
     public function handle()
     {
-        try {
-            $categories = Category::with('attributes.type')->get();
+        $categories = Category::with('attributes.type')->get();
 
-            foreach ($categories as $category) {
-                if ($this->elastic->indices()->exists(['index' => "{$category->id}"])) {
-                    if (!$this->elastic->indices()->getSettings(['index' => "{$category->id}"])) {
-                        $settings = [
-                            'index' => $category->id,
-                            'body' => config('scout.elastic.settings')
+        foreach ($categories as $category) {
+            if ($this->client->indices()->exists(['index' => "{$category->id}"])) {
+                if (!$this->client->indices()->getSettings(['index' => "{$category->id}"])) {
+                    $settings = [
+                        'index' => $category->id,
+                        'body' => config('scout.elastic.settings')
+                    ];
+
+                    $this->client->indices()->putSettings($settings);
+                }
+            } else {
+                $this->client->indices()->create(['index' => "{$category->id}", 'body' => config('scout.elastic.settings')]);
+            }
+
+            $params = [
+                'index' => "{$category->id}",
+                'body' => [
+                    'type' => 'long'
+                ],
+                'type' => 'id'
+            ];
+
+            $this->client->indices()->putMapping($params);
+
+            foreach ($category->attributes as $attribute) {
+                $mapping = [];
+
+                switch ($attribute->type->key) {
+                    case 'integer':
+                        $mapping = [
+                            'type' => 'integer'
                         ];
-
-                        $this->elastic->indices()->putSettings($settings);
-                    }
-                } else {
-                    $this->elastic->indices()->create(['index' => "{$category->id}", 'body' => config('scout.elastic.settings')]);
+                        break;
+                    case 'double':
+                        $mapping = [
+                            'type' => 'double'
+                        ];
+                        break;
+                    case 'multiselect':
+                        $mapping = [
+                            'type' => 'array'
+                        ];
+                        break;
+                    default:
+                        $mapping = [
+                            'type' => 'text',
+                            'fields' => [
+                                'ngram' => [
+                                    'type' => 'text',
+                                    'analyzer' => 'ngram_index_analyzer',
+                                    'search_analyzer' => 'ngram_search_analyzer'
+                                ]
+                            ]
+                        ];
                 }
 
                 $params = [
                     'index' => "{$category->id}",
-                    'body' => [
-                        'type' => 'long'
-                    ],
-                    'type' => 'id'
+                    'body' => $mapping,
+                    'type' => $attribute->name
                 ];
 
-                $this->elastic->indices()->putMapping($params);
-
-                foreach ($category->attributes as $attribute) {
-                    $mapping = [];
-
-                    switch ($attribute->type->key) {
-                        case 'integer':
-                            $mapping = [
-                                'type' => 'integer'
-                            ];
-                            break;
-                        case 'double':
-                            $mapping = [
-                                'type' => 'double'
-                            ];
-                            break;
-                        case 'multiselect':
-                            $mapping = [
-                                'type' => 'array'
-                            ];
-                            break;
-                        default:
-                            $mapping = [
-                                'type' => 'text',
-                                'fields' => [
-                                    'ngram' => [
-                                        'type' => 'text',
-                                        'analyzer' => 'ngram_index_analyzer',
-                                        'search_analyzer' => 'ngram_search_analyzer'
-                                    ]
-                                ]
-                            ];
-                    }
-
-                    $params = [
-                        'index' => "{$category->id}",
-                        'body' => $mapping,
-                        'type' => $attribute->name
-                    ];
-
-                    $this->elastic->indices()->putMapping($params);
-                }
+                $this->client->indices()->putMapping($params);
             }
-
-            $this->info('Elasticsearch settings successfully applied.');
-        } catch (\Exception $e) {
-            Log::error($e);
         }
+
+        $this->info('Elasticsearch settings successfully applied.');
     }
 }
