@@ -1,0 +1,9 @@
+node.name: test
+
+node.master: true
+node.data: true
+
+xpack.ml.enabled: false
+xpack.security.enabled: false
+
+discovery.type: single-node
