@@ -9,6 +9,7 @@ use App\Http\Resources\Item\Item as ItemResource;
 use App\Models\Category\Category;
 use App\Models\Dictionary\Generic;
 use App\Models\Item;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -215,6 +216,8 @@ class ItemController extends Controller
                 } else if ($item->values->count()) {
                     $item->values()->delete();
                 }
+
+                $item->save();
 
                 DB::commit();
                 return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {

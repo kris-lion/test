@@ -86,7 +86,7 @@ return [
     'elastic' => [
         'config' => [
             'hosts' => [
-                env('SCOUT_HOST', 'localhost').':'.env('SCOUT_PORT', '9200'),
+                env('SCOUT_HOST', 'localhost:9200'),
             ]
         ],
         'settings' => [

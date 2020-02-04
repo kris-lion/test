@@ -52,8 +52,6 @@ class Settings extends Command
             $this->client->indices()->putMapping($params);
 
             foreach ($category->attributes as $attribute) {
-                $mapping = [];
-
                 switch ($attribute->type->key) {
                     case 'integer':
                         $mapping = [
@@ -63,11 +61,6 @@ class Settings extends Command
                     case 'double':
                         $mapping = [
                             'type' => 'double'
-                        ];
-                        break;
-                    case 'multiselect':
-                        $mapping = [
-                            'type' => 'array'
                         ];
                         break;
                     default:
@@ -87,7 +80,7 @@ class Settings extends Command
                     'index' => "{$category->id}",
                     'body' => [
                         'properties' => [
-                            $attribute->name => $mapping
+                            "attribute_{$attribute->id}" => $mapping
                         ]
                     ]
                 ];
