@@ -5,7 +5,6 @@ namespace App\Console\Commands\Scout;
 use App\Models\Category\Category;
 use Elasticsearch\ClientBuilder;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Log;
 
 class Settings extends Command
 {
@@ -30,21 +29,24 @@ class Settings extends Command
                 if (!$this->client->indices()->getSettings(['index' => "{$category->id}"])) {
                     $settings = [
                         'index' => $category->id,
-                        'body' => config('scout.elastic.settings')
+                        'body' => ['settings' => config('scout.elastic.settings')]
                     ];
 
                     $this->client->indices()->putSettings($settings);
                 }
             } else {
-                $this->client->indices()->create(['index' => "{$category->id}", 'body' => config('scout.elastic.settings')]);
+                $this->client->indices()->create(['index' => "{$category->id}", 'body' => ['settings' => config('scout.elastic.settings')]]);
             }
 
             $params = [
                 'index' => "{$category->id}",
                 'body' => [
-                    'type' => 'long'
-                ],
-                'type' => 'id'
+                    'properties' => [
+                        'id' => [
+                            'type' => 'long'
+                        ]
+                    ]
+                ]
             ];
 
             $this->client->indices()->putMapping($params);
@@ -83,8 +85,11 @@ class Settings extends Command
 
                 $params = [
                     'index' => "{$category->id}",
-                    'body' => $mapping,
-                    'type' => $attribute->name
+                    'body' => [
+                        'properties' => [
+                            $attribute->name => $mapping
+                        ]
+                    ]
                 ];
 
                 $this->client->indices()->putMapping($params);
