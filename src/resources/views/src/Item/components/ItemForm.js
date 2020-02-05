@@ -103,7 +103,7 @@ class ItemForm extends React.Component {
 
         this.state = {
             delete: false,
-            category: item ? item.category : category,
+            category: category,
             attributes: attributes,
             values: values
         };
@@ -117,10 +117,10 @@ class ItemForm extends React.Component {
         const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
         const { category } = this.state
 
-        const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched) => {
+        const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched, isSubmitting = false) => {
             const { Field, attribute } = item
 
-            return <Field id={ attribute.id } label={ attribute.name } items = { items } values = { values } errors = { errors } setFieldValue = { setFieldValue } setTouched = { setTouched } />
+            return <Field id={ attribute.id } label={ attribute.name } items = { items } values = { values } errors = { errors } setFieldValue = { setFieldValue } setTouched = { setTouched } isSubmitting = { isSubmitting } />
         }
 
         const getItems = (attribute) => {
@@ -285,7 +285,8 @@ class ItemForm extends React.Component {
                                                     this.state.values,
                                                     errors,
                                                     setFieldValue,
-                                                    setTouched
+                                                    setTouched,
+                                                    (isSubmitting || this.state.delete)
                                                 )}
                                             </Grid>
                                         ))

@@ -114,7 +114,7 @@ class Item extends React.Component {
                 category: category
             })
 
-            return actions.items({ page: 1, category: category.id }).then(() => {
+            return actions.items({ page: 1, limit: this.state.rowsPerPage, category: category.id }).then(() => {
                 if (category.hasOwnProperty('attributes')) {
                     let dictionaries  = this.state.dictionaries
                     let columns = []

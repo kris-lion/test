@@ -29,7 +29,7 @@ class ItemController extends Controller
                 $items = Item::search(['search' => $request->get('search'), 'index' => $request->get('category')])
                     ->paginate($request->has('limit') ? $request->get('limit') : null);
 
-                $items->setCollection(Item::whereIn('id', $items->pluck('id')->toArray())->with('category.attributes.type')->with(['values' => function ($query) {
+                $items->setCollection(Item::whereIn('id', $items->pluck('id')->toArray())->with('category')->with(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
@@ -41,7 +41,7 @@ class ItemController extends Controller
                     $items->where(['category_id' => $request->get('category')]);
                 }
 
-                $items = $items->with('category.attributes.type')->with(['values' => function ($query) {
+                $items = $items->with('category')->with(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
@@ -130,6 +130,8 @@ class ItemController extends Controller
                    }
                 }
             }
+
+            $item->save();
 
             DB::commit();
             return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {

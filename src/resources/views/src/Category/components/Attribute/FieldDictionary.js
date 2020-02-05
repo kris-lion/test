@@ -5,12 +5,13 @@ import Autocomplete from "@material-ui/lab/Autocomplete/Autocomplete";
 
 class FieldDictionary extends React.Component {
     render () {
-        const { id, label, items, values, setFieldValue, setTouched } = this.props
+        const { id, label, items, values, setFieldValue, setTouched, isSubmitting } = this.props
 
         return (
             <Autocomplete
                 freeSolo
                 options={ items }
+                disabled={ isSubmitting }
                 getOptionLabel={ option => option.name }
                 defaultValue={
                     values.hasOwnProperty(id)

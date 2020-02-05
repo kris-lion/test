@@ -2,12 +2,12 @@
 
 namespace App\Console\Commands\Unloading;
 
-use App\Models\Dosage\Form;
-use App\Models\Generic;
-use App\Models\Item;
-use App\Models\Item\Category;
-use App\Models\Unit;
+use App\Models\Category\Unit;
+use App\Models\Dictionary\Generic;
+use App\Models\Category\Category;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class File extends Command
@@ -23,144 +23,94 @@ class File extends Command
 
     public function handle()
     {
-        $disk = Storage::disk('data');
+        try {
+            $disk = Storage::disk('data');
 
-        if (($handle = fopen($disk->path('medicaments.csv'), 'r')) !== false) {
-            $i = 0;
-            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
-                echo "{$i}\n";
-                $row = array_map('trim', $row);
+            if (($handle = fopen($disk->path('medicaments.csv'), 'r')) !== false) {
+                $i = 0;
 
-                $product = Item::firstOrCreate([
-                    'standard' => $row[0]
-                ]);
+                $category = Category::where(['name' => 'Лекарственные средства'])->with('attributes.type')->first();
 
-                $unit = null;
+                while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                    DB::beginTransaction();
 
-                if (!empty($row[6])) {
-                    $unit = Unit::firstOrCreate([
-                        'name' => $row[6]
-                    ]);
+                    echo "{$i}\n";
+                    $row = array_map('trim', $row);
+
+                    $item = $category->items()->create();
+
+                    foreach ($category->attributes as $attribute) {
+                        $value = null;
+
+                        switch ($attribute->name) {
+                            case 'Торговое Наименование':
+                                $value = $row[1];
+                                break;
+                            case 'Дозировка краткая':
+                                $value = $row[2];
+                                break;
+                            case 'Фасовка':
+                                $value = $row[3];
+                                break;
+                            case 'Дополнение после Фасовки':
+                                $value = $row[4];
+                                break;
+                            case 'МНН':
+                                $value = $row[11];
+
+                                if (!empty($value)) {
+                                    if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [$value])->first()) {
+                                        Generic::create([
+                                            'name' => $value
+                                        ]);
+                                    }
+                                }
+                                break;
+                            case 'Объем, вес и дозы':
+                                $value = $row[5];
+                                break;
+                            case 'ЕИ объема, веса и дозы':
+                                if (!empty($row[6])) {
+                                    switch ($row[6]) {
+                                        case 'л':
+                                            $row[6] = 'л; дм3';
+                                    }
+
+                                    if ($unit = Unit::whereRaw('LOWER(`short`) LIKE ? ', [$row[6]])->first()) {
+                                        $value = $unit->short;
+                                    }
+                                }
+                                break;
+                            case 'Класс товара':
+                                $value = $row[10];
+                                break;
+                            case 'Лекарственная форма':
+
+
+                                $value = $row[13];
+                                break;
+                        }
+
+                        if (!empty($value)) {
+                            $attribute->values()->create([
+                                'item_id' => $item->id,
+                                'value' => $value
+                            ]);
+                        }
+                    }
+
+                    $item->save();
+
+                    $i++;
+                    DB::commit();
                 }
-
-                $category = Category::firstOrCreate([
-                    'name' => $row[10]
-                ]);
-
-                $generic = Generic::firstOrCreate([
-                    'name' => $row[11]
-                ]);
-
-                $form = Form::firstOrCreate([
-                    'name' => $row[13]
-                ]);
-
-                $product->update([
-                    'name'             => $row[1],
-                    'dosage_short'     => $row[2],
-                    'packing'          => $row[3],
-                    'addition'         => empty($row[4]) ? null : $row[4],
-                    'volume'           => empty($row[5]) ? null : (double) $row[5],
-                    'unit_id'          => $unit ? $unit->id : null,
-                    'quantity'         => empty($row[9]) ? null : $row[9],
-                    'category_id'      => $category->id,
-                    'generic_id'       => $generic->id,
-                    'dosage'           => $row[12],
-                    'form_id'          => $form->id
-                ]);
-
-                $i++;
+                fclose($handle);
             }
-            fclose($handle);
+
+            $this->info('File unloading completed successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error($e);
         }
-
-        if (($handle = fopen($disk->path('products.csv'), 'r')) !== false) {
-            $i = 0;
-            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
-                echo "{$i}\n";
-                $row = array_map('trim', $row);
-
-                $product = Item::firstOrCreate([
-                    'standard' => $row[3]
-                ]);
-
-                $unit = null;
-
-                if (!empty($row[13])) {
-                    $unit = Unit::firstOrCreate([
-                        'name' => $row[13]
-                    ]);
-                }
-
-                $group = Category\Group::firstOrCreate([
-                    'name' => $row[0]
-                ]);
-
-                $category = Category::firstOrCreate([
-                    'name'     => $row[1],
-                    'group_id' => $group->id
-                ]);
-
-                $product->update([
-                    'name'             => $row[4],
-                    'volume'           => empty($row[12]) ? null : (double) $row[5],
-                    'unit_id'          => $unit ? $unit->id : null,
-                    'quantity'         => empty($row[16]) ? null : $row[16],
-                    'category_id'      => $category->id
-                ]);
-
-                $i++;
-            }
-            fclose($handle);
-        }
-
-        if (($handle = fopen($disk->path('preparations.csv'), 'r')) !== false) {
-            $i = 0;
-            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
-                echo "{$i}\n";
-                $row = array_map('trim', $row);
-
-                $product = Item::firstOrCreate([
-                    'standard' => $row[0]
-                ]);
-
-                $unit = null;
-
-                if (!empty($row[6])) {
-                    $unit = Unit::firstOrCreate([
-                        'name' => $row[6]
-                    ]);
-                }
-
-                $category = Category::firstOrCreate([
-                    'name' => $row[12]
-                ]);
-
-                $generic = Generic::firstOrCreate([
-                    'name' => $row[11]
-                ]);
-
-                $form = Form::firstOrCreate([
-                    'name' => $row[10]
-                ]);
-
-                $product->update([
-                    'name'             => $row[1],
-                    'dosage_short'     => $row[4],
-                    'volume'           => empty($row[5]) ? null : (double) $row[5],
-                    'unit_id'          => $unit ? $unit->id : null,
-                    'quantity'         => empty($row[7]) ? null : $row[7],
-                    'category_id'      => $category->id,
-                    'generic_id'       => $generic->id,
-                    'dosage'           => $row[13],
-                    'form_id'          => $form->id
-                ]);
-
-                $i++;
-            }
-            fclose($handle);
-        }
-
-        $this->info('File unloading completed successfully.');
     }
 }
