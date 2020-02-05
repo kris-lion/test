@@ -107,6 +107,7 @@ class ElasticsearchEngine extends Engine
             'size' => $perPage
         ]);
 
+        $result['hits']['total'] = $result['hits']['total']['value'];
         $result['nbPages'] = $result['hits']['total']/$perPage;
 
         return $result;

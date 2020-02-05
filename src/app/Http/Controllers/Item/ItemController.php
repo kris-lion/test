@@ -9,7 +9,6 @@ use App\Http\Resources\Item\Item as ItemResource;
 use App\Models\Category\Category;
 use App\Models\Dictionary\Generic;
 use App\Models\Item;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -26,17 +25,28 @@ class ItemController extends Controller
     public function get(FilterRequest $request)
     {
         try {
-            $items = Item::query();
+            if ($request->has('search')) {
+                $items = Item::search(['search' => $request->get('search'), 'index' => $request->get('category')])
+                    ->paginate($request->has('limit') ? $request->get('limit') : null);
 
-            if ($request->has('category')) {
-                $items->where(['category_id' => $request->get('category')]);
+                $items->setCollection(Item::whereIn('id', $items->pluck('id')->toArray())->with('category.attributes.type')->with(['values' => function ($query) {
+                    $query->with(['attribute' => function ($query) {
+                        $query->with('type', 'options');
+                    }]);
+                }])->get());
+            } else {
+                $items = Item::query();
+
+                if ($request->has('category')) {
+                    $items->where(['category_id' => $request->get('category')]);
+                }
+
+                $items = $items->with('category.attributes.type')->with(['values' => function ($query) {
+                    $query->with(['attribute' => function ($query) {
+                        $query->with('type', 'options');
+                    }]);
+                }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
             }
-
-            $items = $items->with('category.attributes.type')->with(['values' => function ($query) {
-                $query->with(['attribute' => function ($query) {
-                    $query->with('type', 'options');
-                }]);
-            }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
 
             return ItemResource::collection($items);
         } catch (\Exception $e) {
