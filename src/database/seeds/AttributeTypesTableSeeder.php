@@ -48,6 +48,11 @@ class AttributeTypesTableSeeder extends Seeder
         ]);
 
         Type::create([
+            'name' => 'Единица измерения',
+            'key'  => 'unit'
+        ]);
+
+        Type::create([
             'name'   => 'Массив',
             'key'    => 'array',
             'active' => false

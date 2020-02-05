@@ -18,6 +18,7 @@ import { FieldSelect } from "../../Category/components/Attribute/FieldSelect";
 import { FieldMultiselect } from "../../Category/components/Attribute/FieldMultiselect";
 import { FieldGeneric } from "../../Category/components/Attribute/FieldGeneric";
 import { FieldDictionary } from "../../Category/components/Attribute/FieldDictionary";
+import { FieldUnit } from "../../Category/components/Attribute/FieldUnit";
 
 const style = theme => ({
     dialog: {
@@ -72,6 +73,10 @@ class ItemForm extends React.Component {
                         attributes.push({ Field: FieldDictionary, attribute: attribute })
                         values[`${attribute.id}`] = ''
                         break
+                    case 'unit':
+                        attributes.push({ Field: FieldUnit, attribute: attribute })
+                        values[`${attribute.id}`] = ''
+                        break
                     default:
                         break
                 }
@@ -119,7 +124,7 @@ class ItemForm extends React.Component {
         }
 
         const getItems = (attribute) => {
-            const { dictionaries } = this.props
+            const { dictionaries, units } = this.props
 
             let items = []
 
@@ -138,6 +143,9 @@ class ItemForm extends React.Component {
                         default:
                             break
                     }
+                    break
+                case 'unit':
+                    items = units
                     break
                 default:
                     break
@@ -338,9 +346,10 @@ class ItemForm extends React.Component {
 
 function mapStateToProps(state) {
     const { categories } = state.system
+    const { units } = state.unit
 
     return {
-        categories, dictionaries: state.dictionary
+        categories, dictionaries: state.dictionary, units
     }
 }
 

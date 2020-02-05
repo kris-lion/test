@@ -25,6 +25,8 @@ class Settings extends Command
         $categories = Category::with('attributes.type')->get();
 
         foreach ($categories as $category) {
+            $this->client->indices()->delete(['index' => "{$category->id}"]);
+
             if ($this->client->indices()->exists(['index' => "{$category->id}"])) {
                 if (!$this->client->indices()->getSettings(['index' => "{$category->id}"])) {
                     $settings = [

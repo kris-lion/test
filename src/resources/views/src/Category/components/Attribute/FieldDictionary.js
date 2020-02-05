@@ -27,7 +27,6 @@ class FieldDictionary extends React.Component {
                         {...params}
                         name={`attributes.${id}`}
                         label={label}
-                        variant="outlined"
                         fullWidth
                     />
                 )}
