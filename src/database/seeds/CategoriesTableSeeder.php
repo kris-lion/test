@@ -36,8 +36,77 @@ class CategoriesTableSeeder extends Seeder
         }
 
         {
-            Category::create([
+            $types = Type::all();
+
+            $category = Category::create([
                 'name' => 'Дезинфицирующие средства и Моющие средства'
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Торговое Наименование',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => true
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Дозировка Марка',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Дополнение к "Торговое Наименование"',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Дозировка краткая',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => true
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'ЕИ объема, веса и дозы',
+                'type_id'  => $types->where('key', 'unit')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Количество',
+                'type_id'  => $types->where('key', 'integer')->first()->id,
+                'required' => true
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Концентрация',
+                'type_id'  => $types->where('key', 'double')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'ЕИ концентрации',
+                'type_id'  => $types->where('key', 'unit')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Лекарственная форма',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => true
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Активное вещество (МНН)',
+                'type_id'  => $types->where('key', 'dictionary')->first()->id,
+                'required' => true,
+                'value'    => 'generics'
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Класс товара',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => true
             ]);
         }
 
@@ -179,7 +248,7 @@ class CategoriesTableSeeder extends Seeder
 
             $category->attributes()->create([
                 'name'     => 'Объем, вес и дозы',
-                'type_id'  => $types->where('key', 'string')->first()->id,
+                'type_id'  => $types->where('key', 'double')->first()->id,
                 'required' => false
             ]);
 
@@ -270,8 +339,94 @@ class CategoriesTableSeeder extends Seeder
         }
 
         {
-            Category::create([
+            $types = Type::all();
+
+            $category = Category::create([
                 'name' => 'Продукты питания'
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Эталонное наименование',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Имя ТН',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'ТМ',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Сорт',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Кулинарный разруб',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Концентрация',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Категория/Группа',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Дополнение',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Фасовка/Вес',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Вес, объем',
+                'type_id'  => $types->where('key', 'string')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Единица измерения',
+                'type_id'  => $types->where('key', 'unit')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Вес',
+                'type_id'  => $types->where('key', 'double')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Объем',
+                'type_id'  => $types->where('key', 'double')->first()->id,
+                'required' => false
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Количество',
+                'type_id'  => $types->where('key', 'integer')->first()->id,
+                'required' => false
             ]);
         }
 
