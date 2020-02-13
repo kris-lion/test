@@ -224,7 +224,8 @@ class CategoriesTableSeeder extends Seeder
             $category->attributes()->create([
                 'name'     => 'Торговое Наименование',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => true
+                'required' => true,
+                'priority' => true
             ]);
 
             $category->attributes()->create([
