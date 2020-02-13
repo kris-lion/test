@@ -14,6 +14,19 @@ services:
       - app
     networks:
       - app
+  #db:
+  #  image: postgres:12.1
+  #  restart: always
+  #  environment:
+  #    POSTGRES_DB: nomenclature
+  #    POSTGRES_USER: nomenclature
+  #    POSTGRES_PASSWORD: nomenclature
+  #  ports:
+  #    - 5432:5432
+  #  volumes:
+  #    - ./var/postgres/:/docker-entrypoint-initdb.d/
+  #  networks:
+  #    - app
   db:
     image: mysql
     command: --default-authentication-plugin=mysql_native_password

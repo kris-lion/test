@@ -26,14 +26,23 @@ class ItemController extends Controller
     {
         try {
             if ($request->has('search')) {
-                $items = Item::search(['search' => $request->get('search'), 'index' => $request->get('category')])
-                    ->paginate($request->has('limit') ? $request->get('limit') : null);
+                $category = Category::find($request->get('category'));
 
-                $items->setCollection(Item::whereIn('id', $items->pluck('id')->toArray())->with('category')->with(['values' => function ($query) {
+                $sequence = [];
+
+                foreach(Item::search(['search' => $request->get('search'), 'category' => $category])->raw()['hits']['hits'] as $el) {
+                    $sequence[] = $el['_source']['id'];
+                }
+
+                $items = Item::whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }])->get());
+                }])->paginate($request->has('limit') ? $request->get('limit') : null);
+
+                $items->setCollection($items->getCollection()->sortBy(function($item) use ($sequence) {
+                    return array_search($item->getKey(), $sequence);
+                }));
             } else {
                 $items = Item::query();
 

@@ -57,21 +57,21 @@ class Settings extends Command
                 switch ($attribute->type->key) {
                     case 'integer':
                         $mapping = [
-                            'type' => 'integer'
+                            'type' => 'integer',
                         ];
                         break;
                     case 'double':
                         $mapping = [
-                            'type' => 'double'
+                            'type' => 'double',
                         ];
                         break;
                     default:
                         $mapping = [
-                            'type' => 'text',
+                            'type'   => 'text',
                             'fields' => [
                                 'ngram' => [
                                     'type' => 'text',
-                                    'analyzer' => 'ngram_index_analyzer',
+                                    'analyzer'        => 'ngram_index_analyzer',
                                     'search_analyzer' => 'ngram_search_analyzer'
                                 ]
                             ]

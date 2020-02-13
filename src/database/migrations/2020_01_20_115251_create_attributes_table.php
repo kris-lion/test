@@ -24,6 +24,7 @@ class CreateAttributesTable extends Migration
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->boolean('required')->default(false)->comment('Признак обязательного значения');
             $table->string('value')->nullable()->comment('Дополнительное значение');
+            $table->boolean('priority')->default(false)->comment('Приоритетное значение');
             $table->timestamps();
         });
     }

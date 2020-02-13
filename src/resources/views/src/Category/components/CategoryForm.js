@@ -82,7 +82,7 @@ class CategoryForm extends React.Component {
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, required: !!category.required, options: category.options, value: category.value } }) : [],
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, priority: !!category.priority, required: !!category.required, options: category.options, value: category.value } }) : [],
                     category: category ? (category.category ? category.category.id : '') : '',
                 }}
                 validate = {values => {
@@ -327,6 +327,14 @@ class CategoryForm extends React.Component {
                                                                                 <Grid item className={classes.fullWidth}>
                                                                                     <FormControlLabel
                                                                                         control={
+                                                                                            <Field label="Приоритетный" name={`attributes.${index}.priority`} component={ Switch } />
+                                                                                        }
+                                                                                        label="Приоритетный"
+                                                                                    />
+                                                                                </Grid>
+                                                                                <Grid item className={classes.fullWidth}>
+                                                                                    <FormControlLabel
+                                                                                        control={
                                                                                             <Field label="Обязательный" name={`attributes.${index}.required`} component={ Switch } />
                                                                                         }
                                                                                         label="Обязательный"
@@ -341,7 +349,7 @@ class CategoryForm extends React.Component {
                                                     )}
                                                     <Grid item className={classes.fullWidth}>
                                                         <Button
-                                                            onClick={() => arrayHelpers.push({ name: '', type: '', required: false, value: ''})}
+                                                            onClick={() => arrayHelpers.push({ name: '', type: '', priority: false, required: false, value: ''})}
                                                             aria-label={`Добавить`}
                                                             color="primary"
                                                             endIcon={<PlaylistAdd />}

@@ -93,21 +93,27 @@ return [
             'number_of_replicas' => 0,
             'number_of_shards' => 1,
             'analysis' => [
-                'analyzer' => [
-                    'ngram_index_analyzer' => [
-                        'tokenizer' => 'standard',
-                        'filter' => ['lowercase', 'index_ngram']
-                    ],
-                    'ngram_search_analyzer' => [
-                        'tokenizer' => 'standard',
-                        'filter' => ['lowercase']
-                    ]
-                ],
-                'filter' => [
+                'tokenizer' => [
                     'index_ngram' => [
                         'type' => 'edgeNGram',
-                        'min_gram' => 1,
-                        'max_gram' => 20
+                        'min_gram' => 3,
+                        'max_gram' => 10,
+                        'token_chars' => [
+                            'letter'
+                        ]
+                    ]
+                ],
+                'analyzer' => [
+                    'ngram_index_analyzer' => [
+                        'tokenizer' => 'index_ngram',
+                        'filter' => [
+                            'lowercase'
+                        ]
+                    ],
+                    'ngram_search_analyzer' => [
+                        'filter' => [
+                            'lowercase'
+                        ]
                     ]
                 ]
             ]

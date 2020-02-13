@@ -49,7 +49,7 @@ class CategoriesTableSeeder extends Seeder
             ]);
 
             $category->attributes()->create([
-                'name'     => 'Дозировка Марка',
+                'name'     => 'Торговая Марка',
                 'type_id'  => $types->where('key', 'string')->first()->id,
                 'required' => false
             ]);
@@ -64,6 +64,12 @@ class CategoriesTableSeeder extends Seeder
                 'name'     => 'Дозировка краткая',
                 'type_id'  => $types->where('key', 'string')->first()->id,
                 'required' => true
+            ]);
+
+            $category->attributes()->create([
+                'name'     => 'Объем, вес и дозы',
+                'type_id'  => $types->where('key', 'double')->first()->id,
+                'required' => false
             ]);
 
             $category->attributes()->create([

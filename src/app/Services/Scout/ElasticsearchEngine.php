@@ -122,12 +122,25 @@ class ElasticsearchEngine extends Engine
      */
     protected function performSearch(Builder $builder, array $options = [])
     {
+        $category = $builder->query['category'];
+
+        $fields = ['*'];
+
+        foreach ($category->attributes as $attribute) {
+            if ($attribute->priority) {
+                $fields[] = "attribute_{$attribute->id}^5";
+            }
+        }
+
         $params = [
-            'index' => $builder->query['index'],
-            'body' => [
+            'index' => (string) $category->id,
+            'body'  => [
                 'query' => [
-                    'bool' => [
-                        'must' => [['query_string' => [ 'query' => "*{$builder->query['search']}*"]]]
+                    'multi_match' => [
+                        'query'       => $builder->query['search'],
+                        'type'        => 'cross_fields',
+                        'fields'      => $fields,
+                        'tie_breaker' => 0.5,
                     ]
                 ]
             ]
