@@ -6,10 +6,11 @@ use App\Models\Category\Attribute\Value;
 use App\Models\Category\Category;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Laravel\Scout\Searchable;
 
 class Item extends Model
 {
-    use SoftDeletes;
+    use SoftDeletes, Searchable;
 
     protected $table = 'items';
 
@@ -17,8 +18,31 @@ class Item extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'category_id'
+        'id', 'category_id', 'created_at'
     ];
+
+    public function toSearchableArray()
+    {
+        $attributes = [];
+
+        foreach ($this->category->attributes()->with('type')->get() as $attribute) {
+            $attributes["attribute_{$attribute->id}"] = null;
+
+            if ($value = $this->values->where('attribute_id', $attribute->id)->first()) {
+                switch ($attribute->type->key) {
+                    case 'multiselect':
+                        $attributes["attribute_{$attribute->id}"] = json_decode($value->value, true);
+                        break;
+                    default:
+                        $attributes["attribute_{$attribute->id}"] = $value->value;
+                }
+            }
+        }
+
+        $attributes["id"] = $this->id;
+
+        return $attributes;
+    }
 
     public function category()
     {

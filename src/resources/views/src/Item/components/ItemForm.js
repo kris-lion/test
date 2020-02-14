@@ -18,6 +18,7 @@ import { FieldSelect } from "../../Category/components/Attribute/FieldSelect";
 import { FieldMultiselect } from "../../Category/components/Attribute/FieldMultiselect";
 import { FieldGeneric } from "../../Category/components/Attribute/FieldGeneric";
 import { FieldDictionary } from "../../Category/components/Attribute/FieldDictionary";
+import { FieldUnit } from "../../Category/components/Attribute/FieldUnit";
 
 const style = theme => ({
     dialog: {
@@ -72,6 +73,10 @@ class ItemForm extends React.Component {
                         attributes.push({ Field: FieldDictionary, attribute: attribute })
                         values[`${attribute.id}`] = ''
                         break
+                    case 'unit':
+                        attributes.push({ Field: FieldUnit, attribute: attribute })
+                        values[`${attribute.id}`] = ''
+                        break
                     default:
                         break
                 }
@@ -98,7 +103,7 @@ class ItemForm extends React.Component {
 
         this.state = {
             delete: false,
-            category: item ? item.category : category,
+            category: category,
             attributes: attributes,
             values: values
         };
@@ -112,14 +117,14 @@ class ItemForm extends React.Component {
         const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
         const { category } = this.state
 
-        const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched) => {
+        const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched, isSubmitting = false) => {
             const { Field, attribute } = item
 
-            return <Field id={ attribute.id } label={ attribute.name } items = { items } values = { values } errors = { errors } setFieldValue = { setFieldValue } setTouched = { setTouched } />
+            return <Field id={ attribute.id } label={ attribute.name } items = { items } values = { values } errors = { errors } setFieldValue = { setFieldValue } setTouched = { setTouched } isSubmitting = { isSubmitting } />
         }
 
         const getItems = (attribute) => {
-            const { dictionaries } = this.props
+            const { dictionaries, units } = this.props
 
             let items = []
 
@@ -138,6 +143,9 @@ class ItemForm extends React.Component {
                         default:
                             break
                     }
+                    break
+                case 'unit':
+                    items = units
                     break
                 default:
                     break
@@ -277,7 +285,8 @@ class ItemForm extends React.Component {
                                                     this.state.values,
                                                     errors,
                                                     setFieldValue,
-                                                    setTouched
+                                                    setTouched,
+                                                    (isSubmitting || this.state.delete)
                                                 )}
                                             </Grid>
                                         ))
@@ -338,9 +347,10 @@ class ItemForm extends React.Component {
 
 function mapStateToProps(state) {
     const { categories } = state.system
+    const { units } = state.unit
 
     return {
-        categories, dictionaries: state.dictionary
+        categories, dictionaries: state.dictionary, units
     }
 }
 

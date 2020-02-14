@@ -175,7 +175,8 @@ return [
          * Application Package Service Provider...
          */
 
-        App\Services\Authorize\ServiceProvider::class
+        App\Services\Authorize\ServiceProvider::class,
+        App\Services\Scout\ElasticsearchProvider::class
     ],
 
     /*

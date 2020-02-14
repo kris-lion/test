@@ -25,17 +25,37 @@ class ItemController extends Controller
     public function get(FilterRequest $request)
     {
         try {
-            $items = Item::query();
+            if ($request->has('search')) {
+                $category = Category::find($request->get('category'));
 
-            if ($request->has('category')) {
-                $items->where(['category_id' => $request->get('category')]);
+                $sequence = [];
+
+                foreach(Item::search(['search' => $request->get('search'), 'category' => $category])->raw()['hits']['hits'] as $el) {
+                    $sequence[] = $el['_source']['id'];
+                }
+
+                $items = Item::whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
+                    $query->with(['attribute' => function ($query) {
+                        $query->with('type', 'options');
+                    }]);
+                }])->paginate($request->has('limit') ? $request->get('limit') : null);
+
+                $items->setCollection($items->getCollection()->sortBy(function($item) use ($sequence) {
+                    return array_search($item->getKey(), $sequence);
+                }));
+            } else {
+                $items = Item::query();
+
+                if ($request->has('category')) {
+                    $items->where(['category_id' => $request->get('category')]);
+                }
+
+                $items = $items->with('category')->with(['values' => function ($query) {
+                    $query->with(['attribute' => function ($query) {
+                        $query->with('type', 'options');
+                    }]);
+                }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
             }
-
-            $items = $items->with('category.attributes.type')->with(['values' => function ($query) {
-                $query->with(['attribute' => function ($query) {
-                    $query->with('type', 'options');
-                }]);
-            }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
 
             return ItemResource::collection($items);
         } catch (\Exception $e) {
@@ -119,6 +139,8 @@ class ItemController extends Controller
                    }
                 }
             }
+
+            $item->save();
 
             DB::commit();
             return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
@@ -215,6 +237,8 @@ class ItemController extends Controller
                 } else if ($item->values->count()) {
                     $item->values()->delete();
                 }
+
+                $item->save();
 
                 DB::commit();
                 return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
