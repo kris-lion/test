@@ -138,7 +138,7 @@ class ItemController extends Controller
                 }
             }
 
-            $item->save();
+            $item->searchable();;
 
             DB::commit();
             return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
@@ -236,7 +236,7 @@ class ItemController extends Controller
                     $item->values()->delete();
                 }
 
-                $item->save();
+                $item->searchable();
 
                 DB::commit();
                 return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
