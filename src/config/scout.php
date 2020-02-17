@@ -105,12 +105,15 @@ return [
                 ],
                 'analyzer' => [
                     'ngram_index_analyzer' => [
+                        'type' => 'custom',
                         'tokenizer' => 'index_ngram',
                         'filter' => [
                             'lowercase'
                         ]
                     ],
                     'ngram_search_analyzer' => [
+                        'type' => 'custom',
+                        'tokenizer' => 'standard',
                         'filter' => [
                             'lowercase'
                         ]
@@ -119,5 +122,4 @@ return [
             ]
         ]
     ],
-
 ];
