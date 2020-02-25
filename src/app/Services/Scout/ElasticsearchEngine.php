@@ -144,6 +144,11 @@ class ElasticsearchEngine extends Engine
                         'fields'      => $fields,
                         'tie_breaker' => 0.5,
                     ]
+                ],
+                'highlight' => [
+                    'fields' => [
+                        '*' => [ 'number_of_fragments' => 0 ]
+                    ]
                 ]
             ]
         ];

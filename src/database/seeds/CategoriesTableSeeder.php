@@ -225,18 +225,21 @@ class CategoriesTableSeeder extends Seeder
                 'name'     => 'Торговое Наименование',
                 'type_id'  => $types->where('key', 'string')->first()->id,
                 'required' => true,
+                'search'   => true,
                 'priority' => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'Дозировка краткая',
                 'type_id'  => $types->where('key', 'string')->first()->id,
+                'search'   => true,
                 'required' => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'Фасовка',
                 'type_id'  => $types->where('key', 'string')->first()->id,
+                'search'   => true,
                 'required' => true
             ]);
 

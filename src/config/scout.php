@@ -96,10 +96,15 @@ return [
                 'tokenizer' => [
                     'index_ngram' => [
                         'type' => 'edgeNGram',
-                        'min_gram' => 3,
+                        'min_gram' => 1,
                         'max_gram' => 10,
+                        'custom_token_chars' => [
+                            '-'
+                        ],
                         'token_chars' => [
-                            'letter'
+                            'letter',
+                            'digit',
+                            'custom'
                         ]
                     ]
                 ],
