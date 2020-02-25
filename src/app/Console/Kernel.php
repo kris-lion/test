@@ -8,6 +8,7 @@ use App\Models\Matching\Task;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class Kernel extends ConsoleKernel
@@ -42,11 +43,11 @@ class Kernel extends ConsoleKernel
 
                             $categories = Category::with('attributes')->get();
 
-                            while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                            while (($row = fgetcsv($handle, 1000, ";")) !== false) {
                                 $id = null;
                                 $highlight = [];
 
-                                $search = trim($row[0]);
+                                $search = trim($row[1]);
 
                                 $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
                                 if (count($hits)) {
@@ -55,6 +56,10 @@ class Kernel extends ConsoleKernel
                                 }
 
                                 $item = Item::where(['id' => $id])->with(['values' => function ($query) {
+                                    $query->whereHas('attribute',  function ($query) {
+                                        $query->where(['search' => true]);
+                                    });
+
                                     $query->with(['attribute' => function ($query) {
                                         $query->where(['search' => true]);
                                         $query->with('type');
@@ -126,9 +131,9 @@ class Kernel extends ConsoleKernel
                                     });
                                 }
 
-                                $disk->put("result/{$task->id}.json", json_encode([
+                                $disk->append("result/{$task->id}.json", json_encode([
                                     "id"          => $row[0],
-                                    "standard_id" => !$coincidence ?? $item->id,
+                                    "standard_id" => $coincidence ? $item->id : null,
                                     "standards"   => $items->toArray()
                                 ]));
                             }
@@ -139,6 +144,7 @@ class Kernel extends ConsoleKernel
                         DB::commit();
                     } catch (\Exception $e) {
                         DB::rollBack();
+                        Log::error($e);
                         $task->update(['run' => false]);
                     }
                 }
