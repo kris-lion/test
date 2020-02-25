@@ -37,6 +37,10 @@ class CategoryRequest extends FormRequest
                 'required_with:attributes',
                 'boolean'
             ],
+            'attributes.*.search' => [
+                'required_with:attributes',
+                'boolean'
+            ],
             'attributes.*.priority' => [
                 'required_with:attributes',
                 'boolean'

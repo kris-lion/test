@@ -82,7 +82,7 @@ class CategoryForm extends React.Component {
             <Formik
                 initialValues = {{
                     name: category ? category.name : '',
-                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, priority: !!category.priority, required: !!category.required, options: category.options, value: category.value } }) : [],
+                    attributes: category ? category.attributes.map((category) => { return { id: category.id, name: category.name, type: category.type.id, search: !!category.search, priority: !!category.priority, required: !!category.required, options: category.options, value: category.value } }) : [],
                     category: category ? (category.category ? category.category.id : '') : '',
                 }}
                 validate = {values => {
@@ -103,6 +103,10 @@ class CategoryForm extends React.Component {
 
                         if (!item.type) {
                             error.type = 'Выберите тип'
+                        }
+
+                        if (!item.search) {
+                            item.priority = false;
                         }
 
                         if (this.state.options.includes(item.type)) {
@@ -325,12 +329,24 @@ class CategoryForm extends React.Component {
                                                                                     }
                                                                                 </Grid>
                                                                                 <Grid item className={classes.fullWidth}>
-                                                                                    <FormControlLabel
-                                                                                        control={
-                                                                                            <Field label="Приоритетный" name={`attributes.${index}.priority`} component={ Switch } />
-                                                                                        }
-                                                                                        label="Приоритетный"
-                                                                                    />
+                                                                                    <Grid container direction='row' justify='space-between' alignItems='center' spacing={2}>
+                                                                                        <Grid item>
+                                                                                            <FormControlLabel
+                                                                                                control={
+                                                                                                    <Field label="Приоритетный" name={`attributes.${index}.search`} component={ Switch } />
+                                                                                                }
+                                                                                                label="Поиск"
+                                                                                            />
+                                                                                        </Grid>
+                                                                                        <Grid item>
+                                                                                            <FormControlLabel
+                                                                                                control={
+                                                                                                    <Field label="Приоритетный" name={`attributes.${index}.priority`} disabled={isSubmitting || !attribute.search} component={ Switch } />
+                                                                                                }
+                                                                                                label="Приоритетный"
+                                                                                            />
+                                                                                        </Grid>
+                                                                                    </Grid>
                                                                                 </Grid>
                                                                                 <Grid item className={classes.fullWidth}>
                                                                                     <FormControlLabel
@@ -349,7 +365,7 @@ class CategoryForm extends React.Component {
                                                     )}
                                                     <Grid item className={classes.fullWidth}>
                                                         <Button
-                                                            onClick={() => arrayHelpers.push({ name: '', type: '', priority: false, required: false, value: ''})}
+                                                            onClick={() => arrayHelpers.push({ name: '', type: '', search: false, priority: false, required: false, value: ''})}
                                                             aria-label={`Добавить`}
                                                             color="primary"
                                                             endIcon={<PlaylistAdd />}
