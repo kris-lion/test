@@ -86,7 +86,7 @@ services:
     networks:
       - app
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.5.0
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
     ports:
       - 30092:9200
     volumes:

@@ -22,7 +22,10 @@ class Settings extends Command
 
     public function handle()
     {
-        $categories = Category::with('attributes.type')->get();
+        $categories = Category::with(['attributes' => function ($query) {
+            $query->where(['search' => true]);
+            $query->with('type');
+        }])->get();
 
         foreach ($categories as $category) {
             $this->client->indices()->delete(['index' => "{$category->id}"]);

@@ -63,6 +63,7 @@ class CategoryController extends Controller
                             'type_id'  => $type->id,
                             'required' => $item['required'],
                             'value'    => $item['value'],
+                            'search'   => $item['search'],
                             'priority' => $item['priority']
                         ]);
 
@@ -123,6 +124,7 @@ class CategoryController extends Controller
                                         'name'     => $item['name'],
                                         'required' => $item['required'],
                                         'value'    => $item['value'],
+                                        'search'   => $item['search'],
                                         'priority' => $item['priority']
                                     ]);
 
@@ -180,6 +182,7 @@ class CategoryController extends Controller
                                     'type_id'  => $type->id,
                                     'required' => $item['required'],
                                     'value'    => $item['value'],
+                                    'search'   => $item['search'],
                                     'priority' => $item['priority']
                                 ]);
 

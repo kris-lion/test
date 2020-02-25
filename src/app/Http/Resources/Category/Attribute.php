@@ -15,6 +15,7 @@ class Attribute extends JsonResource
             'name'     => $this->name,
             'type'     => new Type($this->whenLoaded('type')),
             'required' => $this->required,
+            'search'   => $this->search,
             'priority' => $this->priority,
             'value'    => $this->value,
             'options'  => OptionResource::collection($this->whenLoaded('options'))

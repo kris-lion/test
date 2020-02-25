@@ -85,8 +85,6 @@ class File extends Command
                                 $value = $row[10];
                                 break;
                             case 'Лекарственная форма':
-
-
                                 $value = $row[13];
                                 break;
                         }
@@ -98,11 +96,10 @@ class File extends Command
                             ]);
                         }
                     }
-
-                    $item->save();
+                    DB::commit();
+                    $item->searchable();
 
                     $i++;
-                    DB::commit();
                 }
                 fclose($handle);
             }

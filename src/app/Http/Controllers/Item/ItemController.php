@@ -26,11 +26,9 @@ class ItemController extends Controller
     {
         try {
             if ($request->has('search')) {
-                $category = Category::find($request->get('category'));
-
                 $sequence = [];
 
-                foreach(Item::search(['search' => $request->get('search'), 'category' => $category])->raw()['hits']['hits'] as $el) {
+                foreach(Item::search(['search' => $request->get('search'), 'categories' => Category::with('attributes')->get()])->raw()['hits']['hits'] as $el) {
                     $sequence[] = $el['_source']['id'];
                 }
 
@@ -88,7 +86,7 @@ class ItemController extends Controller
     }
 
     /**
-     * Добавить атрибут
+     * Добавить эталон
      *
      */
     public function post(ItemRequest $request)
@@ -140,7 +138,7 @@ class ItemController extends Controller
                 }
             }
 
-            $item->save();
+            $item->searchable();;
 
             DB::commit();
             return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
@@ -156,7 +154,7 @@ class ItemController extends Controller
     }
 
     /**
-     * Редактировать атрибут
+     * Редактировать эталон
      *
      */
     public function put(ItemRequest $request, $itemId)
@@ -238,7 +236,7 @@ class ItemController extends Controller
                     $item->values()->delete();
                 }
 
-                $item->save();
+                $item->searchable();
 
                 DB::commit();
                 return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
@@ -257,7 +255,7 @@ class ItemController extends Controller
     }
 
     /**
-     * Удалить атрибут
+     * Удалить эталон
      *
      */
     public function delete($itemId)
