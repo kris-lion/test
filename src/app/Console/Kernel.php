@@ -31,8 +31,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        //$schedule->call(
-        //    function () {
+        $schedule->call(
+            function () {
                 $disk = Storage::disk('matching');
 
                 foreach(Task::where(['active' => true, 'run' => false])->get() as $task) {
@@ -79,15 +79,16 @@ class Kernel extends ConsoleKernel
                                     if ($cache) {
                                         $coincidence = true;
                                     } else {
+
                                         $result = "";
 
                                         $priority = false;
+                                        $check = false;
 
                                         foreach ($item->values as $value) {
                                             if ($value->attribute->priority) {
-                                                if (strripos(mb_strtolower($search), mb_strtolower(trim($value->value))) !== false) {
-                                                    $priority = true;
-                                                }
+                                                $check = true;
+                                                $priority = array_key_exists("attribute_{$value->attribute->id}.ngram", $highlight);
                                             }
 
                                             if (!empty($fullStringResult)) {
@@ -97,7 +98,7 @@ class Kernel extends ConsoleKernel
                                             $result .= (string)$value->value;
                                         }
 
-                                        if ($priority) {
+                                        if (!$check or ($check and $priority)) {
                                             $concurrencyAllAttribute = 0;
 
                                             $match = [];
@@ -161,8 +162,8 @@ class Kernel extends ConsoleKernel
                         $task->update(['run' => false]);
                     }
                 }
-        //    }
-        //)->everyFiveMinutes();
+            }
+        )->everyFiveMinutes();
     }
 
     /**
