@@ -65,8 +65,10 @@ class Settings extends Command
                             'fields' => [
                                 'ngram' => [
                                     'type' => 'text',
-                                    'analyzer'        => 'ngram_index_analyzer',
-                                    'search_analyzer' => 'ngram_search_analyzer'
+                                    'analyzer'        => 'ngram_analyzer',
+                                    'search_analyzer' => 'ngram_analyzer'
+                                    /*'analyzer'        => 'ngram_index_analyzer',
+                                    'search_analyzer' => 'ngram_search_analyzer'*/
                                 ]
                             ]
                         ];

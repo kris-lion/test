@@ -31,8 +31,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule)
     {
-        $schedule->call(
-            function () {
+        //$schedule->call(
+        //    function () {
                 $disk = Storage::disk('matching');
 
                 foreach(Task::where(['active' => true, 'run' => false])->get() as $task) {
@@ -147,7 +147,7 @@ class Kernel extends ConsoleKernel
                                 $disk->append("result/{$task->id}.json", json_encode([
                                     "id"          => $row[0],
                                     "standard_id" => $coincidence ? $item->id : null,
-                                    "standards"   => $items->toArray()
+                                    "standards"   => array_values($items->toArray())
                                 ]));
                             }
 
@@ -161,8 +161,8 @@ class Kernel extends ConsoleKernel
                         $task->update(['run' => false]);
                     }
                 }
-            }
-        )->everyFiveMinutes();
+        //    }
+        //)->everyFiveMinutes();
     }
 
     /**

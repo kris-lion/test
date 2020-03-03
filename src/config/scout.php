@@ -97,7 +97,7 @@ return [
                     'index_ngram' => [
                         'type' => 'edgeNGram',
                         'min_gram' => 1,
-                        'max_gram' => 10,
+                        'max_gram' => 20,
                         'custom_token_chars' => [
                             '-'
                         ],
@@ -109,7 +109,14 @@ return [
                     ]
                 ],
                 'analyzer' => [
-                    'ngram_index_analyzer' => [
+                    'ngram_analyzer' => [
+                        'type' => 'custom',
+                        'tokenizer' => 'index_ngram',
+                        'filter' => [
+                            'lowercase'
+                        ]
+                    ],
+                    /*'ngram_index_analyzer' => [
                         'type' => 'custom',
                         'tokenizer' => 'index_ngram',
                         'filter' => [
@@ -122,7 +129,7 @@ return [
                         'filter' => [
                             'lowercase'
                         ]
-                    ]
+                    ]*/
                 ]
             ]
         ]
