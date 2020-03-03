@@ -97,7 +97,7 @@ class File extends Command
                         }
                     }
                     DB::commit();
-                    $item->searchable();
+                    $item->load('values')->searchable();
 
                     $i++;
                 }

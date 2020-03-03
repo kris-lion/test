@@ -90,7 +90,7 @@ services:
     ports:
       - 30092:9200
     volumes:
-      - /usr/share/elasticsearch/data
+      - ./var/elasticsearch/data:/usr/share/elasticsearch/data
     environment:
       - xpack.ml.enabled=false
       - discovery.type=single-node
