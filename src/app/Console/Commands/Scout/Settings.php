@@ -28,20 +28,11 @@ class Settings extends Command
         }])->get();
 
         foreach ($categories as $category) {
-            $this->client->indices()->delete(['index' => "{$category->id}"]);
-
             if ($this->client->indices()->exists(['index' => "{$category->id}"])) {
-                if (!$this->client->indices()->getSettings(['index' => "{$category->id}"])) {
-                    $settings = [
-                        'index' => $category->id,
-                        'body' => ['settings' => config('scout.elastic.settings')]
-                    ];
-
-                    $this->client->indices()->putSettings($settings);
-                }
-            } else {
-                $this->client->indices()->create(['index' => "{$category->id}", 'body' => ['settings' => config('scout.elastic.settings')]]);
+                $this->client->indices()->delete(['index' => "{$category->id}"]);
             }
+
+            $this->client->indices()->create(['index' => "{$category->id}", 'body' => ['settings' => config('scout.elastic.settings')]]);
 
             $params = [
                 'index' => "{$category->id}",
