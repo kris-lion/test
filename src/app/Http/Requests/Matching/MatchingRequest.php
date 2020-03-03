@@ -15,8 +15,8 @@ class MatchingRequest extends FormRequest
     {
         return [
             'items' => [
-                //'required',
-                //'file'
+                'required',
+                'file'
             ]
         ];
     }
