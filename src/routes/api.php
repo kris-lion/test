@@ -22,9 +22,11 @@ Route::group(['middleware' => ['api']], function () {
             Route::get('/generics', 'DictionaryController@generics');
         });
 
-        Route::namespace('Matching')->prefix('/matching')->group(function () {
-            Route::get('/{id}', 'MatchingController@get');
-            Route::post('/', 'MatchingController@post');
+        Route::group(['middleware' => ['role:system']], function () {
+            Route::namespace('Matching')->prefix('/matching')->group(function () {
+                Route::get('/{id}', 'MatchingController@get');
+                Route::post('/', 'MatchingController@post');
+            });
         });
 
         Route::group(['middleware' => ['permission:role']], function () {

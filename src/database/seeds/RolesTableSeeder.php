@@ -16,6 +16,11 @@ class RolesTableSeeder extends Seeder
         $permissions = Permission::all();
 
         Role::create([
+            'name'        => 'system',
+            'description' => 'Система'
+        ]);
+
+        Role::create([
             'name'        => 'user',
             'description' => 'Пользователь'
         ]);
