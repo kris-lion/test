@@ -112,14 +112,32 @@ return [
                     //16мг -> 16 мг
                     'number_and_string' => [
                         'type'        => 'pattern_replace',
-                        'pattern'     => '( \\d+)([a-zA-Z[а-яА-Я]&&[^,]])',
+                        'pattern'     => '(\\d+)([\\D+&&[^.,]])',
+                        'replacement' => '$1 $2'
+                    ],
+                    //мг16 -> мг 16
+                    'string_and_number' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '([\\D+&&[^.,]])(\\d+)',
                         'replacement' => '$1 $2'
                     ],
                     //1.6 -> 1,6
-                    'numeric_format' => [
+                    'double_format' => [
                         'type'        => 'pattern_replace',
-                        'pattern'     => '(\\d)([.])(\\d)',
+                        'pattern'     => '(\\d+)([.])(\\d+)',
                         'replacement' => '$1,$3'
+                    ],
+                    //1,0 -> 1
+                    'integer_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\d+)([,])([0]+)',
+                        'replacement' => '$1'
+                    ],
+                    //0,1 -> 0,1 1
+                    'number_denominator' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\D)([0]+)([,])(\\d+)',
+                        'replacement' => '$2,$4 $4'
                     ],
                     //N10 -> N 10 | №10 -> № 10 | #10 -> # 10
                     'number_format' => [
@@ -140,7 +158,10 @@ return [
                         'tokenizer' => 'index_ngram',
                         'char_filter' => [
                             'number_and_string',
-                            'numeric_format',
+                            'string_and_number',
+                            'double_format',
+                            'integer_format',
+                            'number_denominator',
                             'number_format'
                         ],
                         'filter' => [
@@ -151,7 +172,10 @@ return [
                         'tokenizer' => 'standard',
                         'char_filter' => [
                             'number_and_string',
-                            'numeric_format',
+                            'string_and_number',
+                            'double_format',
+                            'integer_format',
+                            'number_denominator',
                             'number_format',
                             'string_format'
                         ],
