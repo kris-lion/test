@@ -126,8 +126,6 @@ class Item extends React.Component {
                             this.setState({ offers: { count: --offers.count, categories: categories } })
                         }
 
-                        console.log(offers)
-
                         return dictionary.generics()
                     }
                 )
