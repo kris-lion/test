@@ -18,6 +18,10 @@ class ItemRequest extends FormRequest
                 'required',
                 'integer'
             ],
+            'active' => [
+                'sometimes',
+                'boolean'
+            ],
             'attributes' => [
                 'array'
             ]

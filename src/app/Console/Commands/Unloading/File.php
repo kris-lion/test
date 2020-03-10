@@ -37,7 +37,7 @@ class File extends Command
                     echo "{$i}\n";
                     $row = array_map('trim', $row);
 
-                    $item = $category->items()->create();
+                    $item = $category->items()->create(['active' => true]);
 
                     foreach ($category->attributes as $attribute) {
                         $value = null;
@@ -97,14 +97,14 @@ class File extends Command
                         }
                     }
                     DB::commit();
-                    $item->load('values')->searchable();
+                    $item->load('category', 'values')->searchable();
 
                     $i++;
                 }
                 fclose($handle);
             }
 
-            /*if (($handle = fopen($disk->path('preparations.csv'), 'r')) !== false) {
+            if (($handle = fopen($disk->path('preparations.csv'), 'r')) !== false) {
                 $i = 0;
 
                 $category = Category::where(['name' => 'Дезинфицирующие средства и Моющие средства'])->with('attributes.type')->first();
@@ -115,7 +115,7 @@ class File extends Command
                     echo "{$i}\n";
                     $row = array_map('trim', $row);
 
-                    $item = $category->items()->create();
+                    $item = $category->items()->create(['active' => true]);
 
                     foreach ($category->attributes as $attribute) {
                         $value = null;
@@ -162,6 +162,14 @@ class File extends Command
                                 break;
                             case 'Активное вещество (МНН)':
                                 $value = $row[11];
+
+                                if (!empty($value)) {
+                                    if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [$value])->first()) {
+                                        Generic::create([
+                                            'name' => $value
+                                        ]);
+                                    }
+                                }
                                 break;
                             case 'Класс товара':
                                 $value = $row[12];
@@ -175,11 +183,10 @@ class File extends Command
                             ]);
                         }
                     }
-
-                    $item->save();
+                    DB::commit();
+                    $item->load('category', 'values')->searchable();
 
                     $i++;
-                    DB::commit();
                 }
                 fclose($handle);
             }
@@ -195,15 +202,12 @@ class File extends Command
                     echo "{$i}\n";
                     $row = array_map('trim', $row);
 
-                    $item = $category->items()->create();
+                    $item = $category->items()->create(['active' => true]);
 
                     foreach ($category->attributes as $attribute) {
                         $value = null;
 
                         switch ($attribute->name) {
-                            case 'Эталонное наименование':
-                                $value = $row[3];
-                                break;
                             case 'Имя ТН':
                                 $value = $row[4];
                                 break;
@@ -238,7 +242,7 @@ class File extends Command
                                             $row[13] = 'л; дм3';
                                     }
 
-                                    if ($unit = Unit::whereRaw('LOWER(`short`) LIKE ? ', [$row[6]])->first()) {
+                                    if ($unit = Unit::whereRaw('LOWER(`short`) LIKE ? ', [$row[13]])->first()) {
                                         $value = $unit->short;
                                     }
                                 }
@@ -261,14 +265,13 @@ class File extends Command
                             ]);
                         }
                     }
-
-                    $item->save();
+                    DB::commit();
+                    $item->load('category', 'values')->searchable();
 
                     $i++;
-                    DB::commit();
                 }
                 fclose($handle);
-            }*/
+            }
 
             $this->info('File unloading completed successfully.');
         } catch (\Exception $e) {

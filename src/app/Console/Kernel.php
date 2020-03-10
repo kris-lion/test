@@ -7,6 +7,7 @@ use App\Models\Item;
 use App\Models\Matching\Task;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -34,6 +35,8 @@ class Kernel extends ConsoleKernel
             function () {
                 $disk = Storage::disk('matching');
 
+                $threshold = 75;
+
                 foreach(Task::where(['active' => true, 'run' => false])->get() as $task) {
                     try {
                         $task->update(['run' => true]);
@@ -44,15 +47,29 @@ class Kernel extends ConsoleKernel
                             $categories = Category::with('attributes')->get();
 
                             while (($row = fgetcsv($handle, 1000, ";")) !== false) {
+                                $cache = false;
                                 $id = null;
                                 $highlight = [];
 
                                 $search = trim($row[1]);
 
-                                $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
-                                if (count($hits)) {
-                                    $id = $hits[0]['_source']['id'];
-                                    $highlight = $hits[0]['highlight'];
+                                $key = hash('sha512', $search);
+
+                                try {
+                                    if (Cache::has($key)) {
+                                        $id = Cache::get($key);
+                                        $cache = true;
+                                    }
+                                } catch (\Exception $e) {
+                                    Log::warning($e);
+                                }
+
+                                if (!$cache) {
+                                    $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
+                                    if (count($hits)) {
+                                        $id = $hits[0]['_source']['id'];
+                                        $highlight = $hits[0]['highlight'];
+                                    }
                                 }
 
                                 $item = Item::where(['id' => $id])->with(['values' => function ($query) {
@@ -69,45 +86,50 @@ class Kernel extends ConsoleKernel
                                 $coincidence = false;
 
                                 if ($item) {
-                                    $result = "";
+                                    if ($cache) {
+                                        $coincidence = true;
+                                    } else {
 
-                                    $priority = false;
+                                        $result = "";
 
-                                    foreach ($item->values as $value) {
-                                        if ($value->attribute->priority) {
-                                            if (strripos(mb_strtolower($search), mb_strtolower(trim($value->value))) !== false) {
-                                                $priority = true;
+                                        $priority = false;
+                                        $check = false;
+
+                                        foreach ($item->values as $value) {
+                                            if ($value->attribute->priority) {
+                                                $check = true;
+                                                $priority = array_key_exists("attribute_{$value->attribute->id}.ngram", $highlight);
                                             }
+
+                                            if (!empty($fullStringResult)) {
+                                                $result .= " ";
+                                            }
+
+                                            $result .= (string)$value->value;
                                         }
 
-                                        if (!empty($fullStringResult)) {
-                                            $result .= " ";
+                                        if (!$check or ($check and $priority)) {
+                                            $concurrencyAllAttribute = 0;
+
+                                            $match = [];
+
+                                            foreach ($highlight as $attr => $hit) {
+                                                $m = [];
+
+                                                preg_match_all('/<em[^>]*?>(.*?)<\/em>/si', array_shift($hit), $m);
+
+                                                $match = array_merge($match, $m[1]);
+                                            }
+
+                                            $match = array_unique($match);
+
+                                            foreach ($match as $term) {
+                                                $concurrencyAllAttribute += mb_strlen($term, "utf-8");
+                                            }
+
+                                            $coincidence = ((round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) >= $threshold)
+                                                and (round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) >= $threshold));
                                         }
-
-                                        $result .= (string) $value->value;
-                                    }
-
-                                    if ($priority) {
-                                        $concurrencyAllAttribute = 0;
-
-                                        $match = [];
-
-                                        foreach ($highlight as $attr => $hit) {
-                                            $m = [];
-
-                                            preg_match_all('/<em[^>]*?>(.*?)<\/em>/si', array_shift($hit), $m);
-
-                                            $match = array_merge($match, $m[1]);
-                                        }
-
-                                        $match = array_unique($match);
-
-                                        foreach ($match as $term) {
-                                            $concurrencyAllAttribute += mb_strlen($term, "utf-8");
-                                        }
-
-                                        $coincidence = ((round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) >= 70) and
-                                        (round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) >= 70));
                                     }
                                 }
 
@@ -129,12 +151,18 @@ class Kernel extends ConsoleKernel
                                     $items = $items->sortBy(function($item) use ($sequence) {
                                         return array_search($item->getKey(), $sequence);
                                     });
+                                } else {
+                                    try {
+                                        Cache::put($key, $item->id, 20160);
+                                    } catch (\Exception $e) {
+                                        Log::warning($e);
+                                    }
                                 }
 
                                 $disk->append("result/{$task->id}.json", json_encode([
                                     "id"          => $row[0],
                                     "standard_id" => $coincidence ? $item->id : null,
-                                    "standards"   => $items->toArray()
+                                    "standards"   => array_values($items->toArray())
                                 ]));
                             }
 

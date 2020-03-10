@@ -17,14 +17,29 @@ Route::group(['middleware' => ['api']], function () {
         });
     });
 
-    Route::group(['middleware' => ['token']], function () {
-        Route::namespace('Dictionary')->prefix('/dictionary')->group(function () {
-            Route::get('/generics', 'DictionaryController@generics');
-        });
+    Route::get('/categories', 'Category\CategoryController@get');
 
-        Route::namespace('Matching')->prefix('/matching')->group(function () {
-            Route::get('/{id}', 'MatchingController@get');
-            Route::post('/', 'MatchingController@post');
+    Route::namespace('Category\Unit')->group(function () {
+        Route::get('/units', 'UnitController@get');
+    });
+
+    Route::namespace('Dictionary')->prefix('/dictionary')->group(function () {
+        Route::get('/generics', 'DictionaryController@generics');
+    });
+
+    Route::group(['middleware' => ['token:true']], function () {
+        Route::namespace('Item')->prefix('/item')->group(function () {
+            Route::post('/', 'ItemController@post');
+        });
+    });
+
+    Route::group(['middleware' => ['token']], function () {
+        Route::group(['middleware' => ['role:system']], function () {
+            Route::namespace('Matching')->prefix('/matching')->group(function () {
+                Route::get('/{id}', 'MatchingController@get');
+                Route::post('/', 'MatchingController@post');
+                Route::post('/cache', 'MatchingController@cache');
+            });
         });
 
         Route::group(['middleware' => ['permission:role']], function () {
@@ -42,10 +57,6 @@ Route::group(['middleware' => ['api']], function () {
             });
         });
 
-        Route::namespace('Category\Unit')->group(function () {
-            Route::get('/units', 'UnitController@get');
-        });
-
         Route::group(['middleware' => ['permission:user']], function () {
             Route::get('/users', 'User\UserController@get');
 
@@ -60,18 +71,16 @@ Route::group(['middleware' => ['api']], function () {
             Route::namespace('Item')->prefix('/items')->group(function () {
                 Route::get('/', 'ItemController@get');
                 Route::get('/count', 'ItemController@count');
+                Route::get('/offers', 'ItemController@offers');
             });
 
             Route::namespace('Item')->prefix('/item')->group(function () {
-                Route::post('/', 'ItemController@post');
                 Route::put('/{id}', 'ItemController@put');
                 Route::delete('/{id}', 'ItemController@delete');
             });
         });
 
         Route::group(['middleware' => ['permission:category']], function () {
-            Route::get('/categories', 'Category\CategoryController@get');
-
             Route::namespace('Category')->prefix('/category')->group(function () {
                 Route::post('/', 'CategoryController@post');
                 Route::put('/{id}', 'CategoryController@put');

@@ -18,7 +18,7 @@ class Item extends Model
      * @var array
      */
     protected $fillable = [
-        'id', 'category_id', 'created_at'
+        'id', 'active', 'category_id', 'created_at'
     ];
 
     public function toSearchableArray()
