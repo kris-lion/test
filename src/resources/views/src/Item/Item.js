@@ -4,10 +4,11 @@ import { bindActionCreators } from 'redux'
 
 import { withStyles } from '@material-ui/core/styles'
 import {
-    Grid,
+    Grid, Badge,
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
     Fab, Select, MenuItem
 } from '@material-ui/core'
+import { red } from '@material-ui/core/colors'
 import { Check } from '@material-ui/icons';
 import AddIcon from '@material-ui/icons/Add';
 import { ItemActions } from "./actions/item";
@@ -17,6 +18,9 @@ import { SystemActions } from "../App/actions/system";
 import { DictionaryActions } from "../Dictionary/actions/dictionary";
 
 const style = theme => ({
+    fullWidth: {
+        'width': '100%'
+    },
     field: {
         'height': '100%'
     },
@@ -37,6 +41,15 @@ const style = theme => ({
         'bottom': '25px',
         'left': 'auto',
         'position': 'fixed'
+    },
+    active: {
+        'background-color': red[100],
+        '&:hover': {
+            'background-color': red[50] + '!important',
+        },
+    },
+    default: {
+
     }
 })
 
@@ -51,12 +64,22 @@ class Item extends React.Component {
             page: 0,
             rowsPerPage: 10,
             columns: [],
-            dictionaries: {}
+            dictionaries: {},
+            offers: {
+                count: 0,
+                categories: {}
+            }
         };
     }
 
     componentDidMount () {
-        const { system, unit } = this.props
+        const { actions, system, unit } = this.props
+
+        actions.offers().then(
+            offers => {
+                this.setState({ offers: offers })
+            }
+        )
 
         unit.units();
         system.categories();
@@ -70,7 +93,7 @@ class Item extends React.Component {
 
     render() {
         const { items, categories, classes } = this.props
-        const { item, category, dialog, page, rowsPerPage, columns } = this.state
+        const { item, category, dialog, page, rowsPerPage, columns, offers } = this.state
 
         const handleDelete = (id) => {
             const { actions } = this.props
@@ -90,6 +113,21 @@ class Item extends React.Component {
             if (id) {
                 return actions.save(id, values).then(
                     () => {
+                        if (values.hasOwnProperty('active') && values.active) {
+                            let categories = offers.categories
+                            if (categories.hasOwnProperty(values.category)) {
+                                if (categories[values.category] > 1) {
+                                    --categories[values.category]
+                                } else {
+                                    delete categories[values.category]
+                                }
+                            }
+
+                            this.setState({ offers: { count: --offers.count, categories: categories } })
+                        }
+
+                        console.log(offers)
+
                         return dictionary.generics()
                     }
                 )
@@ -191,7 +229,7 @@ class Item extends React.Component {
 
             if (categories.hasOwnProperty(parent)) {
                 categories[parent].forEach(category => {
-                    result.push(<MenuItem key={ category.id } value={ category }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }</MenuItem>)
+                    result.push(<MenuItem key={ category.id } value={ category } className={ offers.categories.hasOwnProperty(category.id) ? classes.active : classes.default }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }</MenuItem>)
 
                     result = result.concat(assembly(categories, category.id, level + 1))
                 })
@@ -218,16 +256,18 @@ class Item extends React.Component {
                 <Grid item className={classes.item}>
                     <Grid container direction="row" justify="flex-end" alignItems="center">
                         <Grid item sm={3}>
-                            <Select
-                                fullWidth
-                                id="category"
-                                value={ category }
-                                onChange={ handleChange }
-                            >
-                                {
-                                    getCategoriesTree(categories).map(el => el)
-                                }
-                            </Select>
+                            <Badge badgeContent={ offers.count } color="secondary" className={ classes.fullWidth }>
+                                <Select
+                                    fullWidth
+                                    id="category"
+                                    value={ category }
+                                    onChange={ handleChange }
+                                >
+                                    {
+                                        getCategoriesTree(categories).map(el => el)
+                                    }
+                                </Select>
+                            </Badge>
                         </Grid>
                     </Grid>
                 </Grid>
@@ -250,7 +290,7 @@ class Item extends React.Component {
                             <TableBody>
                                 {items.data.map(item => {
                                     return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, item: item })}}>
+                                        <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, item: item })}} className={ !item.active ? classes.active : classes.default } >
                                             {columns.map(column => (
                                                 <TableCell
                                                     key={ column.id }

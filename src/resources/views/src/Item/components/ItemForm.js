@@ -103,6 +103,7 @@ class ItemForm extends React.Component {
 
         this.state = {
             delete: false,
+            active: false,
             category: category,
             attributes: attributes,
             values: values
@@ -218,6 +219,12 @@ class ItemForm extends React.Component {
                     return errors;
                 }}
                 onSubmit = {(values, { setSubmitting }) => {
+                    const { active } = this.state
+
+                    if (active) {
+                        values.active = active
+                    }
+
                     handleSave(values, item ? item.id : null).then(
                         () => {
                             setSubmitting(false)
@@ -321,6 +328,20 @@ class ItemForm extends React.Component {
                                                 >
                                                     { isSubmitting ? <CircularProgress size={24} /> : 'Сохранить' }
                                                 </Button>
+                                                {
+                                                    !item.active &&
+                                                    <Button
+                                                        disabled={ isSubmitting || this.state.active }
+                                                        onClick={() => {
+                                                            this.setState({ active: true })
+                                                            handleSubmit(item.id)
+                                                        }}
+                                                        color="default"
+                                                        type="submit"
+                                                    >
+                                                        { this.state.delete ? <CircularProgress size={24} /> : 'Подтвердить' }
+                                                    </Button>
+                                                }
                                             </DialogActions>
                                         )
                                         : (

@@ -39,7 +39,13 @@ class ItemController extends Controller
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }])->paginate($request->has('limit') ? $request->get('limit') : null);
+                }]);
+
+                if ($request->has('active')) {
+                    $items->where(['active' => ($request->get('active') === 'true')]);
+                }
+
+                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : null);
 
                 $items->setCollection($items->getCollection()->sortBy(function($item) use ($sequence) {
                     return array_search($item->getKey(), $sequence);
@@ -55,7 +61,13 @@ class ItemController extends Controller
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
+                }]);
+
+                if ($request->has('active')) {
+                    $items->where(['active' => ($request->get('active') === 'true')]);
+                }
+
+                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
             }
 
             return ItemResource::collection($items);
@@ -82,6 +94,33 @@ class ItemController extends Controller
             }
 
             return response()->json(['count' => $items->count()]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->make(['message' => trans('http.status.500')], 500);
+        }
+    }
+
+    /**
+     * Предложения эталонов
+     *
+     * @return AnonymousResourceCollection
+     */
+    public function offers()
+    {
+        try {
+            $items = Item::where(['active' => false])->get();
+
+            $count = $items->count();
+
+            $items = $items->groupBy(function ($item) {
+                return $item->category_id;
+            });
+
+            $items = $items->map(function ($item) {
+                return collect($item)->count();
+            });
+
+            return response()->json(['count' => $count, 'categories' => $items->toArray()]);
         } catch (\Exception $e) {
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
@@ -241,6 +280,12 @@ class ItemController extends Controller
                     }
                 } else if ($item->values->count()) {
                     $item->values()->delete();
+                }
+
+                if ($request->has('active')) {
+                    $item->update([
+                        'active' => $request->get('active')
+                    ]);
                 }
 
                 DB::commit();

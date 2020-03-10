@@ -71,6 +71,7 @@ Route::group(['middleware' => ['api']], function () {
             Route::namespace('Item')->prefix('/items')->group(function () {
                 Route::get('/', 'ItemController@get');
                 Route::get('/count', 'ItemController@count');
+                Route::get('/offers', 'ItemController@offers');
             });
 
             Route::namespace('Item')->prefix('/item')->group(function () {

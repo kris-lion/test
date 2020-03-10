@@ -3,6 +3,7 @@ import { ItemService } from '../services/item'
 export const ItemActions = {
     items,
     count,
+    offers,
     add,
     save,
     remove
@@ -49,6 +50,25 @@ function count (params = { }) {
     })
 }
 
+function offers (params = { }) {
+    return dispatch => new Promise((resolve, reject) => {
+        dispatch({ type: 'FILLING', payload: true })
+
+        ItemService.offers(params)
+            .then(
+                response => {
+                    dispatch({ type: 'FILLING', payload: false })
+                    resolve(response)
+                },
+                error => {
+                    dispatch({ type: 'ALERT_ERROR', payload: error.message })
+                    dispatch({ type: 'FILLING', payload: false })
+                    reject()
+                }
+            )
+    })
+}
+
 function add (values) {
     return dispatch => new Promise((resolve, reject) => {
         dispatch({ type: 'ITEM_ADD_REQUEST' })
@@ -77,7 +97,7 @@ function save (id, values) {
             .then(
                 item => {
                     dispatch({ type: 'ITEM_SAVE_SUCCESS', payload: item })
-                    dispatch({ type: 'ALERT_SUCCESS', payload: 'Эталон изменён.' })
+                    dispatch({ type: 'ALERT_SUCCESS', payload: values.hasOwnProperty('active') ? 'Эталон подтверждён.' : 'Эталон изменён.' })
                     resolve()
                 },
                 error => {
