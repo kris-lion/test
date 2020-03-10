@@ -99,7 +99,7 @@ return [
                         'min_gram' => 1,
                         'max_gram' => 20,
                         'custom_token_chars' => [
-                            '-'
+                            '-,'
                         ],
                         'token_chars' => [
                             'letter',
@@ -108,28 +108,57 @@ return [
                         ]
                     ]
                 ],
-                'analyzer' => [
-                    'ngram_analyzer' => [
-                        'type' => 'custom',
-                        'tokenizer' => 'index_ngram',
-                        'filter' => [
-                            'lowercase'
-                        ]
+                'char_filter' => [
+                    //16мг -> 16 мг
+                    'number_and_string' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '( \\d+)([a-zA-Z[а-яА-Я]&&[^,]])',
+                        'replacement' => '$1 $2'
                     ],
-                    /*'ngram_index_analyzer' => [
+                    //1.6 -> 1,6
+                    'numeric_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\d)([.])(\\d)',
+                        'replacement' => '$1,$3'
+                    ],
+                    //N10 -> N 10 | №10 -> № 10 | #10 -> # 10
+                    'number_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '( [№N#]{1})(\\d)',
+                        'replacement' => '$1 $2'
+                    ],
+                    //Текст.Текст -> Текст. Текст
+                    'string_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '([a-zA-Z[а-яА-Я]])([.])([a-zA-Z[а-яА-Я]])',
+                        'replacement' => '$1. $3'
+                    ]
+                ],
+                'analyzer' => [
+                    'ngram_index_analyzer' => [
                         'type' => 'custom',
                         'tokenizer' => 'index_ngram',
+                        'char_filter' => [
+                            'number_and_string',
+                            'numeric_format',
+                            'number_format'
+                        ],
                         'filter' => [
                             'lowercase'
                         ]
                     ],
                     'ngram_search_analyzer' => [
-                        'type' => 'custom',
                         'tokenizer' => 'standard',
+                        'char_filter' => [
+                            'number_and_string',
+                            'numeric_format',
+                            'number_format',
+                            'string_format'
+                        ],
                         'filter' => [
                             'lowercase'
                         ]
-                    ]*/
+                    ]
                 ]
             ]
         ]

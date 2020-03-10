@@ -35,6 +35,8 @@ class Kernel extends ConsoleKernel
             function () {
                 $disk = Storage::disk('matching');
 
+                $threshold = 75;
+
                 foreach(Task::where(['active' => true, 'run' => false])->get() as $task) {
                     try {
                         $task->update(['run' => true]);
@@ -51,10 +53,18 @@ class Kernel extends ConsoleKernel
 
                                 $search = trim($row[1]);
 
-                                if (Cache::has(hash('sha512', $search))) {
-                                    $id = Cache::get(hash('sha512', $search));
-                                    $cache = true;
-                                } else {
+                                $key = hash('sha512', $search);
+
+                                try {
+                                    if (Cache::has($key)) {
+                                        $id = Cache::get($key);
+                                        $cache = true;
+                                    }
+                                } catch (\Exception $e) {
+                                    Log::warning($e);
+                                }
+
+                                if (!$cache) {
                                     $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
                                     if (count($hits)) {
                                         $id = $hits[0]['_source']['id'];
@@ -117,8 +127,8 @@ class Kernel extends ConsoleKernel
                                                 $concurrencyAllAttribute += mb_strlen($term, "utf-8");
                                             }
 
-                                            $coincidence = ((round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) >= 70) and
-                                                (round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) >= 70));
+                                            $coincidence = ((round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) >= $threshold)
+                                                and (round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) >= $threshold));
                                         }
                                     }
                                 }
@@ -142,7 +152,11 @@ class Kernel extends ConsoleKernel
                                         return array_search($item->getKey(), $sequence);
                                     });
                                 } else {
-                                    Cache::put(hash('sha512', $search), $item->id, 20160);
+                                    try {
+                                        Cache::put($key, $item->id, 20160);
+                                    } catch (\Exception $e) {
+                                        Log::warning($e);
+                                    }
                                 }
 
                                 $disk->append("result/{$task->id}.json", json_encode([

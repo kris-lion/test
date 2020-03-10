@@ -124,11 +124,12 @@ class ElasticsearchEngine extends Engine
     {
         $categories = $builder->query['categories'];
 
+        $fields = [];
+
         foreach ($categories as $category) {
             foreach ($category->attributes as $attribute) {
                 if ($attribute->search) {
-                    $fields[] = ($attribute->priority ? "attribute_{$attribute->id}.ngram^5" : "attribute_{$attribute->id}.ngram");
-                    //$fields[] = ($attribute->priority ? "attribute_{$attribute->id}^5" : "attribute_{$attribute->id}");
+                    $fields[] = $attribute->priority ? "attribute_{$attribute->id}.ngram^5" : "attribute_{$attribute->id}.ngram";
                 }
             }
         }
