@@ -4,8 +4,7 @@ import { Formik, Field, Form } from 'formik'
 
 import { withStyles } from '@material-ui/core/styles'
 import {
-    Button, CircularProgress, MenuItem,
-    Dialog, DialogTitle, DialogContent, DialogActions, Grid
+    Button, CircularProgress, MenuItem, Typography, Grid
 } from '@material-ui/core'
 import {
     TextField
@@ -24,88 +23,24 @@ const style = theme => ({
     dialog: {
         'border-radius': 0
     },
+    item: {
+        'padding': '8px',
+        'width': '100%'
+    },
     fullWidth: {
         'width': '100%'
     }
 })
 
-class ItemForm extends React.Component {
+class OfferForm extends React.Component {
     constructor(props) {
         super(props);
 
-        const { item, category } = props
-
-        let attributes = []
-        let values = {}
-
-        if (Object.keys(category).length) {
-            category.attributes.forEach((attribute) => {
-                switch(attribute.type.key) {
-                    case 'string':
-                        attributes.push({ Field: FieldString, attribute: attribute })
-                        values[`${attribute.id}`] = ''
-                        break
-                    case 'integer':
-                        attributes.push({ Field: FieldInteger, attribute: attribute })
-                        values[`${attribute.id}`] = 0
-                        break
-                    case 'double':
-                        attributes.push({ Field: FieldDouble, attribute: attribute })
-                        values[`${attribute.id}`] = 0.00000
-                        break
-                    case 'boolean':
-                        attributes.push({ Field: FieldBoolean, attribute: attribute })
-                        values[`${attribute.id}`] = false
-                        break
-                    case 'select':
-                        attributes.push({ Field: FieldSelect, attribute: attribute })
-                        values[`${attribute.id}`] = 0
-                        break
-                    case 'multiselect':
-                        attributes.push({ Field: FieldMultiselect, attribute: attribute })
-                        values[`${attribute.id}`] = []
-                        break
-                    case 'generic':
-                        attributes.push({ Field: FieldGeneric, attribute: attribute })
-                        values[`${attribute.id}`] = []
-                        break
-                    case 'dictionary':
-                        attributes.push({ Field: FieldDictionary, attribute: attribute })
-                        values[`${attribute.id}`] = ''
-                        break
-                    case 'unit':
-                        attributes.push({ Field: FieldUnit, attribute: attribute })
-                        values[`${attribute.id}`] = ''
-                        break
-                    default:
-                        break
-                }
-            })
-
-            if (item) {
-                item.values.forEach(value => {
-                    switch(value.attribute.type.key) {
-                        case 'generic':
-                            values[`${value.attribute.id}`] = JSON.parse(value.value.replace(new RegExp('null', 'g'), '""'))
-                            break
-                        case 'multiselect':
-                            values[`${value.attribute.id}`] = JSON.parse(value.value)
-                            break
-                        case 'boolean':
-                            values[`${value.attribute.id}`] = !!value.value
-                            break
-                        default:
-                            values[`${value.attribute.id}`] = value.value
-                    }
-                })
-            }
-        }
-
         this.state = {
             delete: false,
-            category: category,
-            attributes: attributes,
-            values: values
+            category: {},
+            attributes: [],
+            values: {}
         };
     }
 
@@ -114,7 +49,7 @@ class ItemForm extends React.Component {
     }
 
     render() {
-        const { handleClose, handleDelete, handleSave, open, item, categories, classes, dispatch } = this.props
+        const { handleSave, categories, classes } = this.props
         const { category } = this.state
 
         const attribute = (item, items = [], values = [], errors = [], setFieldValue, setTouched, isSubmitting = false) => {
@@ -130,10 +65,10 @@ class ItemForm extends React.Component {
 
             switch (attribute.type.key) {
                 case 'select':
-                    items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    items = category.attribute.options.map(option => { return { id: option.id, name: option.option } })
                     break
                 case 'multiselect':
-                    items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    items = category.attribute.options.map(option => { return { id: option.id, name: option.option } })
                     break
                 case 'dictionary':
                     switch (attribute.value) {
@@ -154,12 +89,40 @@ class ItemForm extends React.Component {
             return items
         }
 
+        const assembly = (categories, parent = 0, level = 0) => {
+            let result = []
+
+            if (categories.hasOwnProperty(parent)) {
+                categories[parent].forEach(category => {
+                    result.push(<MenuItem key={ category.id } value={ category.id }>{ '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }</MenuItem>)
+
+                    result = result.concat(assembly(categories, category.id, level + 1))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = categories => {
+            let tmp = {}
+            categories.forEach(category => {
+                if (!tmp.hasOwnProperty((category.category !== null) ? category.category.id : 0)) {
+                    tmp[(category.category !== null) ? category.category.id : 0] = []
+                }
+
+                tmp[(category.category !== null) ? category.category.id : 0].push(category)
+            })
+
+            return assembly(tmp)
+        }
+
         return (
             <Formik
                 enableReinitialize={ true }
-                initialValues = {{...{
-                    category: Object.keys(category).length ? category.id : 0
-                }, ...{ attributes: this.state.values }}}
+                initialValues = {{
+                    ...{ category: Object.keys(category).length ? category.id : '' },
+                    ...{ attributes: this.state.values }
+                }}
                 validate = {values => {
                     const errors = {};
 
@@ -218,11 +181,7 @@ class ItemForm extends React.Component {
                     return errors;
                 }}
                 onSubmit = {(values, { setSubmitting }) => {
-                    handleSave(values, item ? item.id : null).then(
-                        () => {
-                            setSubmitting(false)
-                            dispatch(handleClose)
-                        },
+                    handleSave(values).then(
                         () => {
                             setSubmitting(false)
                         }
@@ -242,18 +201,13 @@ class ItemForm extends React.Component {
                       isSubmitting
                   }) => (
                     <Form>
-                        <Dialog
-                            fullWidth={ true }
-                            maxWidth="sm"
-                            open={ open }
-                            onClose={ handleClose }
-                            aria-labelledby="Эталон"
-                            classes={{
-                                paper: classes.dialog
-                            }}
-                        >
-                            <DialogTitle>{ item ? 'Редактировать' : 'Добавить' }</DialogTitle>
-                            <DialogContent>
+                        <Grid container direction='column' justify='center' alignItems='center'>
+                            <Grid item sm={8} className={classes.item}>
+                                <Typography variant="h6">
+                                    Предложить эталон
+                                </Typography>
+                            </Grid>
+                            <Grid item sm={8} className={classes.item}>
                                 <Grid container direction='column' justify='center' alignItems='center' spacing={2}>
                                     <Grid item sm={8} className={classes.fullWidth}>
                                         <Field
@@ -263,17 +217,70 @@ class ItemForm extends React.Component {
                                             label="Категория"
                                             select
                                             variant="standard"
-                                            disabled={ !!Object.keys(category).length }
                                             component={ TextField }
                                             InputLabelProps={{
                                                 shrink: true,
                                             }}
+                                            InputProps={{
+                                                onChange: (e) => {
+                                                    let id = e.target.value
+                                                    let attributes = []
+                                                    let items = this.state.values
+
+                                                    let current = categories.find((element) => {
+                                                        return element.id === id
+                                                    })
+
+                                                    current.attributes.forEach((attribute) => {
+                                                        switch(attribute.type.key) {
+                                                            case 'string':
+                                                                attributes.push({ Field: FieldString, attribute: attribute })
+                                                                items[`${attribute.id}`] = ''
+                                                                break
+                                                            case 'integer':
+                                                                attributes.push({ Field: FieldInteger, attribute: attribute })
+                                                                items[`${attribute.id}`] = 0
+                                                                break
+                                                            case 'double':
+                                                                items[`${attribute.id}`] = 0.00000
+                                                                break
+                                                            case 'boolean':
+                                                                attributes.push({ Field: FieldBoolean, attribute: attribute })
+                                                                items[`${attribute.id}`] = false
+                                                                break
+                                                            case 'select':
+                                                                attributes.push({ Field: FieldSelect, attribute: attribute })
+                                                                items[`${attribute.id}`] = 0
+                                                                break
+                                                            case 'multiselect':
+                                                                attributes.push({ Field: FieldMultiselect, attribute: attribute })
+                                                                items[`${attribute.id}`] = []
+                                                                break
+                                                            case 'generic':
+                                                                attributes.push({ Field: FieldGeneric, attribute: attribute })
+                                                                items[`${attribute.id}`] = []
+                                                                break
+                                                            case 'dictionary':
+                                                                attributes.push({ Field: FieldDictionary, attribute: attribute })
+                                                                items[`${attribute.id}`] = ''
+                                                                break
+                                                            case 'unit':
+                                                                attributes.push({ Field: FieldUnit, attribute: attribute })
+                                                                items[`${attribute.id}`] = ''
+                                                                break
+                                                            default:
+                                                                break
+                                                        }
+                                                    })
+
+                                                    setFieldValue('category', id)
+                                                    this.setState({ category: current, attributes: attributes, values: items })
+                                                }
+                                            }}
                                         >
-                                            {categories.map(option => (
-                                                <MenuItem key={option.id} value={option.id}>
-                                                    {option.name}
-                                                </MenuItem>
-                                            ))}
+                                            {
+                                                getCategoriesTree(categories).map(el => el)
+                                            }
                                         </Field>
                                     </Grid>
                                     {
@@ -292,52 +299,22 @@ class ItemForm extends React.Component {
                                         ))
                                     }
                                 </Grid>
-                            </DialogContent>
-                            <DialogActions>
-                                {
-                                    item
-                                        ? (
-                                            <DialogActions>
-                                                <Button
-                                                    disabled={ isSubmitting || this.state.delete }
-                                                    onClick={() => {
-                                                        this.setState({ delete: true })
-                                                        handleDelete(item.id).then(
-                                                            () => {
-                                                                handleClose()
-                                                            }
-                                                        )
-                                                    }}
-                                                    color="secondary"
-                                                    type="submit"
-                                                >
-                                                    { this.state.delete ? <CircularProgress size={24} /> : 'Удалить' }
-                                                </Button>
-                                                < Button
-                                                    disabled={ isSubmitting || this.state.delete }
-                                                    onClick={ handleSubmit }
-                                                    color="primary"
-                                                    type="submit"
-                                                >
-                                                    { isSubmitting ? <CircularProgress size={24} /> : 'Сохранить' }
-                                                </Button>
-                                            </DialogActions>
-                                        )
-                                        : (
-                                            <DialogActions>
-                                                < Button
-                                                    disabled={ isSubmitting }
-                                                    onClick={ handleSubmit }
-                                                    color="primary"
-                                                    type="submit"
-                                                >
-                                                    { isSubmitting ? <CircularProgress size={24} /> : 'Добавить' }
-                                                </Button>
-                                            </DialogActions>
-                                        )
-                                }
-                            </DialogActions>
-                        </Dialog>
+                            </Grid>
+                            <Grid item sm={8} className={classes.item}>
+                                <Grid container direction='row' justify='flex-end' alignItems='center'>
+                                    <Grid item>
+                                        <Button
+                                            color="primary"
+                                            disabled={ isSubmitting }
+                                            onClick={ handleSubmit }
+                                            type="submit"
+                                        >
+                                            { isSubmitting ? <CircularProgress size={24} /> : 'Предложить' }
+                                        </Button>
+                                    </Grid>
+                                </Grid>
+                            </Grid>
+                        </Grid>
                     </Form>
                 )}
             </Formik>
@@ -360,7 +337,7 @@ function mapDispatchToProps(dispatch) {
     }
 }
 
-ItemForm = withStyles(style)(ItemForm)
+OfferForm = withStyles(style)(OfferForm)
 
-const connectedItemForm = connect(mapStateToProps, mapDispatchToProps)(ItemForm)
-export { connectedItemForm as ItemForm }
+const connectedOfferForm = connect(mapStateToProps, mapDispatchToProps)(OfferForm)
+export { connectedOfferForm as OfferForm }

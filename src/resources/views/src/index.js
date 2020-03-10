@@ -21,6 +21,7 @@ import { Alert } from './App/Alert'
 import { Login } from './Auth/Login'
 import { Logout } from './Auth/Logout'
 import { Item } from "./Item/Item";
+import { Offer } from "./Item/Offer";
 import { Category } from "./Category/Category";
 import { Role } from "./Access/Role";
 import { User } from "./Access/User";
@@ -41,6 +42,7 @@ render(
                 <Router history={ history }>
                     <Switch>
                         <Route exact component={ Authorization([], ['reference'])(Item) } path='/items' />
+                        <Route exact component={ Offer } path='/item/offer' />
                         <Route exact component={ Authorization([], ['category'])(Category) } path='/categories' />
                         <Route exact component={ Authorization([], ['role'])(Role) } path='/access/roles' />
                         <Route exact component={ Authorization([], ['user'])(User) } path='/access/users' />
