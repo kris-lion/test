@@ -94,6 +94,9 @@ class ItemForm extends React.Component {
                         case 'boolean':
                             values[`${value.attribute.id}`] = !!value.value
                             break
+                        case 'double':
+                            values[`${value.attribute.id}`] = value.value.replace(',', '.')
+                            break
                         default:
                             values[`${value.attribute.id}`] = value.value
                     }
