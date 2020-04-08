@@ -1,10 +1,10 @@
-FROM php:7.3-fpm
+FROM php:7.4-fpm
 
 RUN apt-get update && apt-get install -y \
 	git vim wget unzip gnupg htop sudo procps zip \
 	libfreetype6-dev \
 	libjpeg62-turbo-dev \
-	libmariadbclient-dev \ 
+	libmariadbclient-dev \
 	libmemcached-dev \
 	libcurl4-gnutls-dev \
 	libc-client-dev libkrb5-dev \
@@ -13,23 +13,24 @@ RUN apt-get update && apt-get install -y \
 	libbz2-dev \
 	zlib1g-dev \
 	libicu-dev \
+	libonig-dev \
+    libpq-dev \
 	htmldoc \
-	g++ && apt-get clean 
+	g++ && apt-get clean
 
 RUN pecl install -o -f redis
 RUN docker-php-ext-enable redis
 RUN pecl install apcu
 RUN docker-php-ext-enable apcu
 
-RUN docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/
+RUN docker-php-ext-configure gd --with-freetype=/usr/include/ --with-jpeg=/usr/include/
+
 RUN docker-php-ext-configure pcntl --enable-pcntl
 RUN docker-php-ext-configure intl --enable-intl
 RUN docker-php-ext-configure mbstring --enable-mbstring
-RUN docker-php-ext-install -j$(nproc) curl 
-RUN docker-php-ext-install -j$(nproc) pdo 
-RUN docker-php-ext-install -j$(nproc) pdo_mysql
+RUN docker-php-ext-install -j$(nproc) curl
+RUN docker-php-ext-install -j$(nproc) pdo
 RUN docker-php-ext-install -j$(nproc) gd
-RUN docker-php-ext-install -j$(nproc) mysqli
 RUN docker-php-ext-install -j$(nproc) intl
 RUN docker-php-ext-install -j$(nproc) pcntl
 RUN docker-php-ext-install -j$(nproc) mbstring
@@ -43,8 +44,8 @@ RUN docker-php-ext-install -j$(nproc) zip
 RUN docker-php-ext-install -j$(nproc) json
 RUN docker-php-ext-install -j$(nproc) tokenizer
 RUN docker-php-ext-install -j$(nproc) sockets
-# RUN docker-php-ext-install -j$(nproc) pgsql
-# RUN docker-php-ext-install -j$(nproc) pdo_pgsql
+RUN docker-php-ext-install -j$(nproc) pgsql
+RUN docker-php-ext-install -j$(nproc) pdo_pgsql
 RUN docker-php-ext-install -j$(nproc) opcache
 RUN docker-php-ext-install -j$(nproc) xml
 

@@ -122,7 +122,7 @@ class ItemController extends Controller
                                    'value'   => trim($attributes[$attribute->id])
                                ]);
 
-                               if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [trim(strtolower($attributes[$attribute->id]))])->first()) {
+                               if (!Generic::whereRaw('LOWER(name) LIKE ? ', [trim(strtolower($attributes[$attribute->id]))])->first()) {
                                    Generic::create([
                                        'name' => trim($attributes[$attribute->id])
                                    ]);
@@ -210,7 +210,7 @@ class ItemController extends Controller
                                         ]);
                                     }
 
-                                    if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [trim(strtolower($attributes[$attribute->id]))])->first()) {
+                                    if (!Generic::whereRaw('LOWER(name) LIKE ? ', [trim(strtolower($attributes[$attribute->id]))])->first()) {
                                         Generic::create([
                                             'name' => trim($attributes[$attribute->id])
                                         ]);
