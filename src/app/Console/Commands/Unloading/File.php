@@ -59,7 +59,7 @@ class File extends Command
                                 $value = $row[11];
 
                                 if (!empty($value)) {
-                                    if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [$value])->first()) {
+                                    if (!Generic::whereRaw('LOWER(name) LIKE ? ', [$value])->first()) {
                                         Generic::create([
                                             'name' => $value
                                         ]);
@@ -76,7 +76,7 @@ class File extends Command
                                             $row[6] = 'л; дм3';
                                     }
 
-                                    if ($unit = Unit::whereRaw('LOWER(`short`) LIKE ? ', [$row[6]])->first()) {
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [$row[6]])->first()) {
                                         $value = $unit->short;
                                     }
                                 }
@@ -143,7 +143,7 @@ class File extends Command
                                             $row[6] = 'л; дм3';
                                     }
 
-                                    if ($unit = Unit::whereRaw('LOWER(`short`) LIKE ? ', [$row[6]])->first()) {
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [$row[6]])->first()) {
                                         $value = $unit->short;
                                     }
                                 }
@@ -242,7 +242,7 @@ class File extends Command
                                             $row[13] = 'л; дм3';
                                     }
 
-                                    if ($unit = Unit::whereRaw('LOWER(`short`) LIKE ? ', [$row[13]])->first()) {
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [$row[6]])->first()) {
                                         $value = $unit->short;
                                     }
                                 }
