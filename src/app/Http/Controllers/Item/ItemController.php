@@ -9,6 +9,7 @@ use App\Http\Resources\Item\Item as ItemResource;
 use App\Models\Category\Category;
 use App\Models\Dictionary\Generic;
 use App\Models\Item;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -28,7 +29,9 @@ class ItemController extends Controller
             if ($request->has('search')) {
                 $sequence = [];
 
-                foreach(Item::search(['search' => $request->get('search'), 'categories' => Category::with('attributes')->get()])->raw()['hits']['hits'] as $el) {
+                $search = $request->get('search');
+
+                foreach(Item::search(['search' => $search, 'categories' => Category::with('attributes')->get()])->raw()['hits']['hits'] as $el) {
                     $sequence[] = $el['_source']['id'];
                 }
 
@@ -36,7 +39,13 @@ class ItemController extends Controller
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }])->paginate($request->has('limit') ? $request->get('limit') : null);
+                }]);
+
+                if ($request->has('active')) {
+                    $items->where(['active' => ($request->get('active') === 'true')]);
+                }
+
+                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : null);
 
                 $items->setCollection($items->getCollection()->sortBy(function($item) use ($sequence) {
                     return array_search($item->getKey(), $sequence);
@@ -52,7 +61,13 @@ class ItemController extends Controller
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }])->paginate($request->has('limit') ? $request->get('limit') : $items->count());
+                }]);
+
+                if ($request->has('active')) {
+                    $items->where(['active' => ($request->get('active') === 'true')]);
+                }
+
+                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
             }
 
             return ItemResource::collection($items);
@@ -86,6 +101,33 @@ class ItemController extends Controller
     }
 
     /**
+     * Предложения эталонов
+     *
+     * @return AnonymousResourceCollection
+     */
+    public function offers()
+    {
+        try {
+            $items = Item::where(['active' => false])->get();
+
+            $count = $items->count();
+
+            $items = $items->groupBy(function ($item) {
+                return $item->category_id;
+            });
+
+            $items = $items->map(function ($item) {
+                return collect($item)->count();
+            });
+
+            return response()->json(['count' => $count, 'categories' => $items->toArray()]);
+        } catch (\Exception $e) {
+            Log::error($e);
+            return response()->make(['message' => trans('http.status.500')], 500);
+        }
+    }
+
+    /**
      * Добавить эталон
      *
      */
@@ -96,13 +138,14 @@ class ItemController extends Controller
 
             DB::beginTransaction();
 
-            $item = $category->items()->create();
+            $item = $category->items()->create(['active' => Auth::user() ? true : false]);
 
             if ($request->has('attributes')) {
                 $attributes = $request->get('attributes');
 
                 foreach ($category->attributes as $attribute) {
-                   if (array_key_exists($attribute->id, $request->get('attributes')) and !empty($attributes[$attribute->id])) {
+                   if (array_key_exists($attribute->id, $attributes) and !empty($attributes[$attribute->id])) {
+
                        switch ($attribute->type->key) {
                            case 'generic':
                                $attribute->values()->create([
@@ -138,14 +181,17 @@ class ItemController extends Controller
                 }
             }
 
-            $item->load('values')->searchable();;
-
             DB::commit();
-            return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
+
+            $item->load('category.attributes.type')->load(['values' => function ($query) {
                 $query->with(['attribute' => function ($query) {
                     $query->with('type', 'options');
                 }]);
-            }]));
+            }]);
+
+            $item->searchable();
+
+            return new ItemResource($item);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error($e);
@@ -172,7 +218,7 @@ class ItemController extends Controller
                     foreach ($category->attributes as $attribute) {
                         $value = $item->values->where('attribute_id', '=', $attribute->id)->first();
 
-                        if (array_key_exists($attribute->id, $request->get('attributes')) and !empty($attributes[$attribute->id])) {
+                        if (array_key_exists($attribute->id, $attributes) and !empty($attributes[$attribute->id])) {
                             switch ($attribute->type->key) {
                                 case 'generic':
                                     if ($value) {
@@ -236,14 +282,23 @@ class ItemController extends Controller
                     $item->values()->delete();
                 }
 
-                $item->load('values')->searchable();
+                if ($request->has('active')) {
+                    $item->update([
+                        'active' => $request->get('active')
+                    ]);
+                }
 
                 DB::commit();
-                return new ItemResource($item->load('category.attributes.type')->load(['values' => function ($query) {
+
+                $item->load('category.attributes.type')->load(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }]));
+                }]);
+
+                $item->searchable();
+
+                return new ItemResource($item);
             }
 
             return response()->noContent();

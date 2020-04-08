@@ -18,6 +18,7 @@ class CreateItemsTable extends Migration
             $table->unsignedBigInteger('category_id')->nullable()->unsigned()->comment('Идентификатор категории');
             $table->foreign('category_id')->references('id')->on('categories')
                 ->onUpdate('cascade')->onDelete('cascade');
+            $table->boolean('active')->default(false);
             $table->timestamps();
             $table->softDeletesTz();
         });

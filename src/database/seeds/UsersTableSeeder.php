@@ -16,6 +16,13 @@ class UsersTableSeeder extends Seeder
     {
         $roles = Role::all();
 
+        $system = User::create([
+            'login'    => 'system',
+            'password' => Hash::make('password')
+        ]);
+
+        $system->roles()->attach($roles->whereIn('name', ['system'])->pluck('id')->toArray());
+
         $admin = User::create([
             'login'    => 'admin',
             'password' => Hash::make('password')

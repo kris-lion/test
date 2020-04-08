@@ -97,9 +97,9 @@ return [
                     'index_ngram' => [
                         'type' => 'edgeNGram',
                         'min_gram' => 1,
-                        'max_gram' => 10,
+                        'max_gram' => 20,
                         'custom_token_chars' => [
-                            '-'
+                            '-,'
                         ],
                         'token_chars' => [
                             'letter',
@@ -108,17 +108,77 @@ return [
                         ]
                     ]
                 ],
+                'char_filter' => [
+                    //16мг -> 16 мг
+                    'number_and_string' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\d+)([\\D+&&[^.,]])',
+                        'replacement' => '$1 $2'
+                    ],
+                    //мг16 -> мг 16
+                    'string_and_number' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '([\\D+&&[^.,]])(\\d+)',
+                        'replacement' => '$1 $2'
+                    ],
+                    //1.6 -> 1,6
+                    'double_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\d+)([.])(\\d+)',
+                        'replacement' => '$1,$3'
+                    ],
+                    //1,0 -> 1
+                    'integer_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\d+)([,])([0]+)',
+                        'replacement' => '$1'
+                    ],
+                    //0,1 -> 0,1 1
+                    'number_denominator' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '(\\D)([0]+)([,])(\\d+)',
+                        'replacement' => '$2,$4 $4'
+                    ],
+                    //N10 -> N 10 | №10 -> № 10 | #10 -> # 10
+                    'number_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '( [№N#]{1})(\\d)',
+                        'replacement' => '$1 $2'
+                    ],
+                    //Текст.Текст -> Текст. Текст
+                    'string_format' => [
+                        'type'        => 'pattern_replace',
+                        'pattern'     => '([a-zA-Z[а-яА-Я]])([.])([a-zA-Z[а-яА-Я]])',
+                        'replacement' => '$1. $3'
+                    ]
+                ],
                 'analyzer' => [
                     'ngram_index_analyzer' => [
                         'type' => 'custom',
                         'tokenizer' => 'index_ngram',
+                        'char_filter' => [
+                            'number_and_string',
+                            'string_and_number',
+                            'double_format',
+                            'integer_format',
+                            'number_denominator',
+                            'number_format'
+                        ],
                         'filter' => [
                             'lowercase'
                         ]
                     ],
                     'ngram_search_analyzer' => [
-                        'type' => 'custom',
                         'tokenizer' => 'standard',
+                        'char_filter' => [
+                            'number_and_string',
+                            'string_and_number',
+                            'double_format',
+                            'integer_format',
+                            'number_denominator',
+                            'number_format',
+                            'string_format'
+                        ],
                         'filter' => [
                             'lowercase'
                         ]

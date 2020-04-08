@@ -45,7 +45,9 @@ class CategoriesTableSeeder extends Seeder
             $category->attributes()->create([
                 'name'     => 'Торговое Наименование',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => true
+                'required' => true,
+                'search'   => true,
+                'priority' => true
             ]);
 
             $category->attributes()->create([
@@ -63,19 +65,22 @@ class CategoriesTableSeeder extends Seeder
             $category->attributes()->create([
                 'name'     => 'Дозировка краткая',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => true
+                'required' => true,
+                'search'   => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'Объем, вес и дозы',
                 'type_id'  => $types->where('key', 'double')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'ЕИ объема, веса и дозы',
                 'type_id'  => $types->where('key', 'unit')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true
             ]);
 
             $category->attributes()->create([
@@ -356,21 +361,18 @@ class CategoriesTableSeeder extends Seeder
             ]);
 
             $category->attributes()->create([
-                'name'     => 'Эталонное наименование',
-                'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => false
-            ]);
-
-            $category->attributes()->create([
                 'name'     => 'Имя ТН',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true,
+                'priority' => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'ТМ',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true
             ]);
 
             $category->attributes()->create([
@@ -400,19 +402,22 @@ class CategoriesTableSeeder extends Seeder
             $category->attributes()->create([
                 'name'     => 'Дополнение',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'Фасовка/Вес',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true
             ]);
 
             $category->attributes()->create([
                 'name'     => 'Вес, объем',
                 'type_id'  => $types->where('key', 'string')->first()->id,
-                'required' => false
+                'required' => false,
+                'search'   => true
             ]);
 
             $category->attributes()->create([

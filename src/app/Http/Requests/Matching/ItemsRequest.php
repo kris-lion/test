@@ -4,7 +4,7 @@ namespace App\Http\Requests\Matching;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class MatchingRequest extends FormRequest
+class ItemsRequest extends FormRequest
 {
     /**
      * Проверка данных
@@ -16,7 +16,15 @@ class MatchingRequest extends FormRequest
         return [
             'items' => [
                 'required',
-                'file'
+                'array'
+            ],
+            'items.*.search' => [
+                'required',
+                'string'
+            ],
+            'items.*.standard_id' => [
+                'required',
+                'numeric'
             ]
         ];
     }
