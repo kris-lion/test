@@ -19,7 +19,7 @@ class CreateItemsTable extends Migration
             $table->foreign('category_id')->references('id')->on('categories')
                 ->onUpdate('cascade')->onDelete('cascade');
             $table->boolean('active')->default(false);
-            $table->timestamps();
+            $table->timestampsTz();
             $table->softDeletesTz();
         });
     }

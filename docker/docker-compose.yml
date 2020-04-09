@@ -18,9 +18,9 @@ services:
     image: postgres:12.1
     restart: always
     environment:
-      POSTGRES_DB: elmag
-      POSTGRES_USER: elmag
-      POSTGRES_PASSWORD: elmag
+      POSTGRES_DB: nomenclature
+      POSTGRES_USER: nomenclature
+      POSTGRES_PASSWORD: nomenclature
     ports:
       - 35432:5432
     volumes:
