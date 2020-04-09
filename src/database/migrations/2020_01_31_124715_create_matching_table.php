@@ -17,7 +17,7 @@ class CreateMatchingTable extends Migration
             $table->bigIncrements('id');
             $table->boolean('active')->default(true)->comment('Статус');
             $table->boolean('run')->default(false)->comment('Статус выполнения');
-            $table->timestamps();
+            $table->timestampsTz();
         });
     }
 

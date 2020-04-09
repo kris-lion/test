@@ -26,7 +26,7 @@ class CreateAttributesTable extends Migration
             $table->string('value')->nullable()->comment('Дополнительное значение');
             $table->boolean('search')->default(false)->comment('Поиск по значению');
             $table->boolean('priority')->default(false)->comment('Приоритетное значение');
-            $table->timestamps();
+            $table->timestampsTz();
         });
     }
 
