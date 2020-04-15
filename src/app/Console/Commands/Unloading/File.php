@@ -164,7 +164,7 @@ class File extends Command
                                 $value = $row[11];
 
                                 if (!empty($value)) {
-                                    if (!Generic::whereRaw('LOWER(`name`) LIKE ? ', [trim(mb_strtolower($value))])->first()) {
+                                    if (!Generic::whereRaw('LOWER(name) LIKE ? ', [trim(mb_strtolower($value))])->first()) {
                                         Generic::create([
                                             'name' => $value
                                         ]);
