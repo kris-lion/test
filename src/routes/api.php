@@ -33,6 +33,10 @@ Route::group(['middleware' => ['api']], function () {
         });
     });
 
+    Route::namespace('Item')->group(function() {
+        Route::get('/items', 'ItemController@get');
+    });
+
     Route::group(['middleware' => ['token']], function () {
         Route::group(['middleware' => ['role:system']], function () {
             Route::namespace('Matching')->prefix('/matching')->group(function () {
@@ -69,7 +73,6 @@ Route::group(['middleware' => ['api']], function () {
 
         Route::group(['middleware' => ['permission:reference']], function () {
             Route::namespace('Item')->prefix('/items')->group(function () {
-                Route::get('/', 'ItemController@get');
                 Route::get('/count', 'ItemController@count');
                 Route::get('/offers', 'ItemController@offers');
             });
