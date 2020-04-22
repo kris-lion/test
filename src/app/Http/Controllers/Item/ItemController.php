@@ -31,7 +31,14 @@ class ItemController extends Controller
 
                 $search = $request->get('search');
 
-                foreach(Item::search(['search' => $search, 'categories' => Category::with('attributes')->get()])->raw()['hits']['hits'] as $el) {
+                if ($request->has('category')) {
+                    $test = DB::select('WITH RECURSIVE r AS (SELECT id, category_id FROM categories WHERE category_id = ? UNION SELECT categories.id, categories.category_id FROM categories JOIN r ON categories.category_id = r.id) SELECT * FROM r', [$request->get('category')]);
+                    $categories = Category::with('attributes')->whereIn('id', array_merge([(int) $request->get('category')], collect($test)->pluck('id')->toArray()))->get();
+                } else {
+                    $categories = Category::with('attributes')->get();
+                }
+
+                foreach(Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'] as $el) {
                     $sequence[] = $el['_source']['id'];
                 }
 
