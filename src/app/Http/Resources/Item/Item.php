@@ -28,7 +28,7 @@ class Item extends JsonResource
                 if ($name) {
                     $name = "{$name} ";
                 }
-                $name = "{$name} {$value->value}";
+                $name = "{$name}{$value->value}";
             }
         }
 
