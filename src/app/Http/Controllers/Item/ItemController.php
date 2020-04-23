@@ -46,7 +46,7 @@ class ItemController extends Controller
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
-                }]);
+                }])->whereIn('category_id', $categories->pluck('id')->toArray());
 
                 if ($request->has('active')) {
                     $items->where(['active' => ($request->get('active') === 'true')]);
