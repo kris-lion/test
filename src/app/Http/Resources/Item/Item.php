@@ -26,9 +26,9 @@ class Item extends JsonResource
         foreach ($this->values as $value) {
             if ($value->attribute->search) {
                 if ($name) {
-                    $nema = "{$name} ";
+                    $name = "{$name} ";
                 }
-                $name = "{$name} {$value}";
+                $name = "{$name} {$value->value}";
             }
         }
 
