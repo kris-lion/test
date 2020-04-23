@@ -15,6 +15,23 @@ class Item extends JsonResource
             'active'   => $this->active,
             'category' => new Category($this->whenLoaded('category')),
             'values'   => ValueResource::collection($this->whenLoaded('values')),
+            'name'     => $this->getName()
         ];
+    }
+
+    protected function getName()
+    {
+        $name = null;
+
+        foreach ($this->values as $value) {
+            if ($value->attribute->search) {
+                if ($name) {
+                    $nema = "{$name} ";
+                }
+                $name = "{$name} {$value}";
+            }
+        }
+
+        return $name;
     }
 }
