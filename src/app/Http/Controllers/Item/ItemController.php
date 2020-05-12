@@ -38,7 +38,7 @@ class ItemController extends Controller
                     $categories = Category::with('attributes')->get();
                 }
 
-                foreach(Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'] as $el) {
+                foreach(Item::search(['search' => $search, 'categories' => $categories])->take($request->has('limit') ? $request->get('limit') : 10)->raw()['hits']['hits'] as $el) {
                     $sequence[] = $el['_source']['id'];
                 }
 
@@ -52,7 +52,7 @@ class ItemController extends Controller
                     $items->where(['active' => ($request->get('active') === 'true')]);
                 }
 
-                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : null);
+                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
 
                 $items->setCollection($items->getCollection()->sortBy(function($item) use ($sequence) {
                     return array_search($item->getKey(), $sequence);
