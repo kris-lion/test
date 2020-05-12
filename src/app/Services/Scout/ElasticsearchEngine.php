@@ -129,7 +129,7 @@ class ElasticsearchEngine extends Engine
         foreach ($categories as $category) {
             foreach ($category->attributes as $attribute) {
                 if ($attribute->search) {
-                    $fields[] = $attribute->priority ? "attribute_{$attribute->id}.ngram^5" : "attribute_{$attribute->id}.ngram";
+                    $fields[] = $attribute->priority ? "attribute_{$attribute->id}.ngram^2" : "attribute_{$attribute->id}.ngram";
                 }
             }
         }
