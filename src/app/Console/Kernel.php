@@ -159,11 +159,11 @@ class Kernel extends ConsoleKernel
                                     }
                                 }
 
-                                $disk->append("result/{$task->id}.json", json_encode([
+                                file_put_contents($disk->path("result/{$task->id}.json"), json_encode([
                                     "id"          => $row[0],
                                     "standard_id" => $coincidence ? $item->id : null,
                                     "standards"   => array_values($items->toArray())
-                                ]));
+                                ]), FILE_APPEND | LOCK_EX);
                             }
 
                             $task->update(['active' => false, 'run' => false]);
@@ -172,6 +172,7 @@ class Kernel extends ConsoleKernel
                         DB::commit();
                     } catch (\Exception $e) {
                         DB::rollBack();
+                        dd($e);
                         Log::error($e);
                         $task->update(['run' => false]);
                     }
