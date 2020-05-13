@@ -37,14 +37,14 @@ class Kernel extends ConsoleKernel
 
                 $threshold = 75;
 
+                $categories = Category::with('attributes')->get();
+
                 foreach(Task::where(['active' => true, 'run' => false])->get() as $task) {
                     try {
                         $task->update(['run' => true]);
                         DB::beginTransaction();
 
                         if (($handle = fopen($disk->path($task->id), 'r')) !== false) {
-
-                            $categories = Category::with('attributes')->get();
 
                             while (($row = fgetcsv($handle, 1000, ";")) !== false) {
                                 $cache = false;
@@ -177,7 +177,7 @@ class Kernel extends ConsoleKernel
                     }
                 }
             }
-        )->everyFiveMinutes();
+        )->everyMinute();
     }
 
     /**
