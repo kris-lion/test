@@ -5,6 +5,7 @@ namespace App\Console;
 use App\Models\Category\Category;
 use App\Models\Item;
 use App\Models\Matching\Task;
+use App\Http\Resources\Item\Item as ItemResource;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use Illuminate\Support\Facades\Cache;
@@ -79,7 +80,7 @@ class Kernel extends ConsoleKernel
 
                                     $query->with(['attribute' => function ($query) {
                                         $query->where(['search' => true]);
-                                        $query->with('type');
+                                        $query->with('type', 'options');
                                     }]);
                                 }])->first();
 
@@ -161,7 +162,7 @@ class Kernel extends ConsoleKernel
 
                                 file_put_contents($disk->path("result/{$task->id}.json"), json_encode([
                                     "id"          => $row[0],
-                                    "standard_id" => $coincidence ? $item->id : null,
+                                    "standard"    => $coincidence ? new ItemResource($item) : null,
                                     "standards"   => array_values($items->toArray())
                                 ]), FILE_APPEND | LOCK_EX);
                             }
