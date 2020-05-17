@@ -73,7 +73,7 @@ class Kernel extends ConsoleKernel
                                     }
                                 }
 
-                                $item = Item::where(['id' => $id])->with(['values' => function ($query) {
+                                $item = Item::where(['id' => $id])->with('category')->with(['values' => function ($query) {
                                     $query->whereHas('attribute',  function ($query) {
                                         $query->where(['search' => true]);
                                     });
@@ -163,8 +163,8 @@ class Kernel extends ConsoleKernel
                                 file_put_contents($disk->path("result/{$task->id}.json"), json_encode([
                                     "id"          => $row[0],
                                     "standard"    => $coincidence ? new ItemResource($item) : null,
-                                    "standards"   => array_values($items->toArray())
-                                ]), FILE_APPEND | LOCK_EX);
+                                    "standards"   => ItemResource::collection($items)
+                                ]) . "\n", FILE_APPEND | LOCK_EX);
                             }
 
                             $task->update(['active' => false, 'run' => false]);
