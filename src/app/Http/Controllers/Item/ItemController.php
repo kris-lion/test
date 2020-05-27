@@ -27,8 +27,6 @@ class ItemController extends Controller
     {
         try {
             if ($request->has('search')) {
-                $sequence = [];
-
                 $search = $request->get('search');
 
                 if ($request->has('category')) {
@@ -38,9 +36,7 @@ class ItemController extends Controller
                     $categories = Category::with('attributes')->get();
                 }
 
-                foreach(Item::search(['search' => $search, 'categories' => $categories])->get()->raw()['hits']['hits'] as $el) {
-                    $sequence[] = $el['_source']['id'];
-                }
+                $sequence = Item::search(['search' => $search, 'categories' => $categories])->get()->pluck('id')->toArray();
 
                 $items = Item::where(function ($query) use ($request) { if ($request->has('except')) { $query->whereNotIn('id', explode(',', $request->has('except'))); } })->whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
