@@ -38,7 +38,7 @@ class ItemController extends Controller
                     $categories = Category::with('attributes')->get();
                 }
 
-                foreach(Item::search(['search' => $search, 'categories' => $categories])->take($request->has('limit') ? $request->get('limit') : 10)->raw()['hits']['hits'] as $el) {
+                foreach(Item::where(function ($query) use ($request) { if ($request->has('except')) { $query->whereNotIn('id', explode(',', $request->has('except'))); } })->search(['search' => $search, 'categories' => $categories])->take($request->has('limit') ? $request->get('limit') : 10)->raw()['hits']['hits'] as $el) {
                     $sequence[] = $el['_source']['id'];
                 }
 
