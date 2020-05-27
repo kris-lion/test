@@ -38,11 +38,11 @@ class ItemController extends Controller
                     $categories = Category::with('attributes')->get();
                 }
 
-                foreach(Item::where(function ($query) use ($request) { if ($request->has('except')) { $query->whereNotIn('id', explode(',', $request->has('except'))); } })->search(['search' => $search, 'categories' => $categories])->take($request->has('limit') ? $request->get('limit') : 10)->raw()['hits']['hits'] as $el) {
+                foreach(Item::search(['search' => $search, 'categories' => $categories])->get()->raw()['hits']['hits'] as $el) {
                     $sequence[] = $el['_source']['id'];
                 }
 
-                $items = Item::whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
+                $items = Item::where(function ($query) use ($request) { if ($request->has('except')) { $query->whereNotIn('id', explode(',', $request->has('except'))); } })->whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
