@@ -124,34 +124,80 @@ class ElasticsearchEngine extends Engine
     {
         $categories = $builder->query['categories'];
 
+        $generic = null;
+        if (array_key_exists('generic', $builder->query)) {
+            $generic = [
+                'search' => $builder->query['generic'],
+                'field'  => null
+            ];
+        }
+
         $fields = [];
 
         foreach ($categories as $category) {
             foreach ($category->attributes as $attribute) {
+                if ($generic and ($attribute->value === 'generics')) {
+                    $generic['field'] = "attribute_{$attribute->id}.ngram^2";
+                }
                 if ($attribute->search) {
                     $fields[] = $attribute->priority ? "attribute_{$attribute->id}.ngram^2" : "attribute_{$attribute->id}.ngram";
                 }
             }
         }
 
-        $params = [
-            'index' => '_all',
-            'body'  => [
-                'query' => [
-                    'multi_match' => [
-                        'query'       => $builder->query['search'],
-                        'type'        => 'cross_fields',
-                        'fields'      => $fields,
-                        'tie_breaker' => 0.5,
-                    ]
-                ],
-                'highlight' => [
-                    'fields' => [
-                        '*' => [ 'number_of_fragments' => 0 ]
+        if ($generic) {
+            $params = [
+                'index' => '_all',
+                'body'  => [
+                    'query' => [
+                        'bool' => [
+                            'should' => [
+                                [
+                                    'multi_match' => [
+                                        'query'       => $generic['search'],
+                                        'type'        => 'cross_fields',
+                                        'fields'      => $generic['field'],
+                                        'tie_breaker' => 0.5
+                                    ]
+                                ],
+                                [
+                                    'multi_match' => [
+                                        'query'       => $builder->query['search'],
+                                        'type'        => 'cross_fields',
+                                        'fields'      => $fields,
+                                        'tie_breaker' => 0.5
+                                    ],
+                                ]
+                            ]
+                        ],
+                    ],
+                    /*'highlight' => [
+                        'fields' => [
+                            '*' => [ 'number_of_fragments' => 0 ]
+                        ]
+                    ]*/
+                ]
+            ];
+        } else {
+            $params = [
+                'index' => '_all',
+                'body'  => [
+                    'query' => [
+                        'multi_match' => [
+                            'query'       => $builder->query['search'],
+                            'type'        => 'cross_fields',
+                            'fields'      => $fields,
+                            'tie_breaker' => 0.5,
+                        ]
+                    ],
+                    'highlight' => [
+                        'fields' => [
+                            '*' => [ 'number_of_fragments' => 0 ]
+                        ]
                     ]
                 ]
-            ]
-        ];
+            ];
+        }
 
         if ($sort = $this->sort($builder)) {
             $params['body']['sort'] = $sort;
