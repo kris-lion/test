@@ -43,9 +43,12 @@ class ItemController extends Controller
                     if ($request->has('except') and !empty($request->get('except'))) {
                         $query->whereNotIn('id', explode(',', $request->get('except')));
                     }
-                    if ($request->has('attribute') and !empty($request->get('attribute'))) {
+                    if ($request->has('generic') and !empty($request->get('generic'))) {
                         $query->whereHas('values', function ($query) use ($request) {
-                            $query->where(['attribute_id' => $request->get('attribute')]);
+                            $query->where(['id' => $request->get('generic')]);
+                            $query->whereHas('attribute', function ($query) {
+                                $query->where(['value' => 'generics']);
+                            });
                         });
                     }
                 })->whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
