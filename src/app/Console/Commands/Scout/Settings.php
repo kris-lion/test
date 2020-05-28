@@ -23,7 +23,6 @@ class Settings extends Command
     public function handle()
     {
         $categories = Category::with(['attributes' => function ($query) {
-            $query->where(['search' => true]);
             $query->with('type');
         }])->get();
 
