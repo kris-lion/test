@@ -38,7 +38,7 @@ class ItemController extends Controller
                 }
 
                 $sequence = Item::search(['search' => $search, 'categories' => $categories, 'generic' => $request->get('generic')])->get()->pluck('id')->toArray();
-                dd($sequence);
+
                 $items = Item::where(function ($query) use ($request) {
                     if ($request->has('except') and !empty($request->get('except'))) {
                         $query->whereNotIn('id', explode(',', $request->get('except')));
