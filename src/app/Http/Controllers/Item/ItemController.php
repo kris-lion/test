@@ -45,7 +45,7 @@ class ItemController extends Controller
                     }
                     if ($request->has('generic') and !empty($request->get('generic'))) {
                         $query->whereHas('values', function ($query) use ($request) {
-                            $query->where(['id' => $request->get('generic')]);
+                            $query->whereRaw('LOWER(value) LIKE ? ', [trim(mb_strtolower($request->get('generic')))]);
                             $query->whereHas('attribute', function ($query) {
                                 $query->where(['value' => 'generics']);
                             });
