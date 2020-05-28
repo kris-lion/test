@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use function foo\func;
 
 class ItemController extends Controller
 {
@@ -38,7 +39,16 @@ class ItemController extends Controller
 
                 $sequence = Item::search(['search' => $search, 'categories' => $categories])->get()->pluck('id')->toArray();
 
-                $items = Item::where(function ($query) use ($request) { if ($request->has('except') and !empty($request->get('except'))) { $query->whereNotIn('id', explode(',', $request->get('except'))); } })->whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
+                $items = Item::where(function ($query) use ($request) {
+                    if ($request->has('except') and !empty($request->get('except'))) {
+                        $query->whereNotIn('id', explode(',', $request->get('except')));
+                    }
+                    if ($request->has('attribute') and !empty($request->get('attribute'))) {
+                        $query->whereHas('values', function ($query) use ($request) {
+                            $query->where(['attribute_id' => $request->get('attribute')]);
+                        });
+                    }
+                })->whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
                         $query->with('type', 'options');
                     }]);
