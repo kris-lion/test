@@ -125,7 +125,7 @@ class ElasticsearchEngine extends Engine
         $categories = $builder->query['categories'];
 
         $generic = null;
-        if (array_key_exists('generic', $builder->query)) {
+        if (array_key_exists('generic', $builder->query) and !empty($builder->query['generic'])) {
             $generic = [
                 'search' => $builder->query['generic'],
                 'field'  => null
