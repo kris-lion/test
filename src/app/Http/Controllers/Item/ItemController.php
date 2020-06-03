@@ -9,7 +9,9 @@ use App\Http\Resources\Item\Item as ItemResource;
 use App\Models\Category\Category;
 use App\Models\Dictionary\Generic;
 use App\Models\Item;
+use App\Models\Matching\Task;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -91,6 +93,134 @@ class ItemController extends Controller
             Log::error($e);
             return response()->make(['message' => trans('http.status.500')], 500);
         }
+    }
+
+    /**
+     * Анализ
+     *
+     * @param FilterRequest $request
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function analysis(FilterRequest $request)
+    {
+        $threshold = 75;
+
+        $categories = Category::with('attributes')->get();
+
+        $cache = false;
+        $id = null;
+        $highlight = [];
+
+        $search = $request->get('search');
+
+        $key = hash('sha512', $search);
+
+        try {
+            if (Cache::has($key)) {
+                $id = Cache::get($key);
+                $cache = true;
+            }
+        } catch (\Exception $e) {
+            Log::warning($e);
+        }
+
+        if (!$cache) {
+            $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
+            if (count($hits)) {
+                $id = $hits[0]['_source']['id'];
+                $highlight = $hits[0]['highlight'];
+            }
+        }
+
+        $item = Item::where(['id' => $id])->with('category')->with(['values' => function ($query) {
+            $query->whereHas('attribute',  function ($query) {
+                $query->where(['search' => true]);
+            });
+
+            $query->with(['attribute' => function ($query) {
+                $query->where(['search' => true]);
+                $query->with('type', 'options');
+            }]);
+        }])->first();
+
+        $coincidence = false;
+
+        if ($item) {
+            if ($cache) {
+                $coincidence = true;
+            } else {
+
+                $result = "";
+
+                $priority = false;
+                $check = false;
+
+                foreach ($item->values as $value) {
+                    if ($value->attribute->priority) {
+                        $check = true;
+                        $priority = array_key_exists("attribute_{$value->attribute->id}.ngram", $highlight);
+                    }
+
+                    if (!empty($fullStringResult)) {
+                        $result .= " ";
+                    }
+
+                    $result .= (string)$value->value;
+                }
+
+                if (!$check or ($check and $priority)) {
+                    $concurrencyAllAttribute = 0;
+
+                    $match = [];
+
+                    foreach ($highlight as $attr => $hit) {
+                        $m = [];
+
+                        preg_match_all('/<em[^>]*?>(.*?)<\/em>/si', array_shift($hit), $m);
+
+                        $match = array_merge($match, $m[1]);
+                    }
+
+                    $match = array_unique($match);
+
+                    foreach ($match as $term) {
+                        $concurrencyAllAttribute += mb_strlen($term, "utf-8");
+                    }
+
+                    $coincidence = ((round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) >= $threshold)
+                        and (round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) >= $threshold));
+                }
+            }
+        }
+
+        $items = collect();
+
+        if (!$coincidence) {
+            $sequence = [];
+
+            foreach($hits as $el) {
+                $sequence[] = $el['_source']['id'];
+            }
+
+            $items = Item::whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
+                $query->with(['attribute' => function ($query) {
+                    $query->with('type', 'options');
+                }]);
+            }])->get();
+
+            $items = $items->sortBy(function($item) use ($sequence) {
+                return array_search($item->getKey(), $sequence);
+            });
+        } else {
+            try {
+                Cache::put($key, $item->id, 20160);
+            } catch (\Exception $e) {
+                Log::warning($e);
+            }
+        }
+
+        return response()->json(['standard' => $coincidence ? new ItemResource($item) : null]);
     }
 
     /**

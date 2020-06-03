@@ -35,6 +35,7 @@ Route::group(['middleware' => ['api']], function () {
 
     Route::namespace('Item')->group(function() {
         Route::get('/items', 'ItemController@get');
+        Route::get('/analysis', 'ItemController@analysis');
     });
 
     Route::group(['middleware' => ['token']], function () {
