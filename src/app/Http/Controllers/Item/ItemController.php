@@ -13,6 +13,7 @@ use App\Models\Matching\Task;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use function foo\func;
@@ -112,6 +113,8 @@ class ItemController extends Controller
         $id = null;
         $highlight = [];
         $name = null;
+        $id = null;
+        $category = null;
 
         $search = $request->get('search');
 
@@ -153,6 +156,9 @@ class ItemController extends Controller
         ];
 
         if ($item) {
+            $id = $item->id;
+            $category = $item->category;
+
             if ($cache) {
                 $coincidence = true;
             } else {
@@ -235,12 +241,41 @@ class ItemController extends Controller
             }
         }
 
+        $analyze = [
+            'search' => null,
+            'result' => null
+        ];
+
+        if ($category) {
+            $response = Http::post(current(config('scout.elastic.config.hosts')) . "/{$category->id}/_analyze?pretty", [
+                "analyzer" => "ngram_search_analyzer",
+                "text" => $result
+            ]);
+
+            if ($response->ok()) {
+                $analyze['result'] = collect(json_decode($response->body())->tokens)->pluck('token')->toArray();
+            }
+
+            $response = Http::post(current(config('scout.elastic.config.hosts')) . "/{$category->id}/_analyze?pretty", [
+                "analyzer" => "ngram_search_analyzer",
+                "text" => $search
+            ]);
+
+            if ($response->ok()) {
+                $analyze['search'] = collect(json_decode($response->body())->tokens)->pluck('token')->toArray();
+            }
+        }
+
         return response()->json([
             'search'      => $search,
-            'result'      => $name,
+            'result'      => [
+                'id'   => $id,
+                'name' => $name
+            ],
             'standard'    => $coincidence ? new ItemResource($item) : null,
+            'coincidence' => $count,
             'highlight'   => $highlight,
-            'coincidence' => $count
+            'tokens'      => $analyze
         ]);
     }
 
