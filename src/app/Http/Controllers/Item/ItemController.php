@@ -111,6 +111,7 @@ class ItemController extends Controller
         $cache = false;
         $id = null;
         $highlight = [];
+        $name = null;
 
         $search = $request->get('search');
 
@@ -146,6 +147,11 @@ class ItemController extends Controller
 
         $coincidence = false;
 
+        $count = [
+            'result',
+            'search'
+        ];
+
         if ($item) {
             if ($cache) {
                 $coincidence = true;
@@ -160,6 +166,10 @@ class ItemController extends Controller
                     if ($value->attribute->priority) {
                         $check = true;
                         $priority = array_key_exists("attribute_{$value->attribute->id}.ngram", $highlight);
+                    }
+
+                    if ($value->attribute->search) {
+                        $name .= $name ? " {$value->value}" : (string)$value->value;
                     }
 
                     if (!empty($fullStringResult)) {
@@ -190,6 +200,11 @@ class ItemController extends Controller
 
                     $coincidence = ((round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) >= $threshold)
                         and (round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) >= $threshold));
+
+                    $count = [
+                        'result' => round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $result), "utf-8")) * 100), 1) . " %",
+                        'search' => round((($concurrencyAllAttribute / mb_strlen(str_replace(" ", "", $search), "utf-8")) * 100), 1) . " %"
+                    ];
                 }
             }
         }
@@ -220,7 +235,13 @@ class ItemController extends Controller
             }
         }
 
-        return response()->json(['standard' => $coincidence ? new ItemResource($item) : null]);
+        return response()->json([
+            'search'      => $search,
+            'result'      => $name,
+            'standard'    => $coincidence ? new ItemResource($item) : null,
+            'highlight'   => $highlight,
+            'coincidence' => $count
+        ]);
     }
 
     /**

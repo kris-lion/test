@@ -162,14 +162,15 @@ return [
                             'double_format',
                             'integer_format',
                             'number_denominator',
-                            'number_format'
+                            'number_format',
+                            'string_format'
                         ],
                         'filter' => [
                             'lowercase'
                         ]
                     ],
                     'ngram_search_analyzer' => [
-                        'tokenizer' => 'standard',
+                        'tokenizer' => 'index_ngram',
                         'char_filter' => [
                             'number_and_string',
                             'string_and_number',
