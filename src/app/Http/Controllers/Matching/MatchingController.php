@@ -28,7 +28,7 @@ class MatchingController extends Controller
 
             $disk = Storage::disk('matching');
 
-            return response()->file($disk->getDriver()->getAdapter()->getPathPrefix() . "result/{$task->id}.json");
+            return response()->download($disk->getDriver()->getAdapter()->getPathPrefix() . "result/{$task->id}.json");
         }
 
         return response()->make(['message' => trans('http.status.404')], 404);
