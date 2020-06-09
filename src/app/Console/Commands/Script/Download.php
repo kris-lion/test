@@ -37,9 +37,9 @@ class Download extends Command
 
         $i = 0;
 
-        $result = "Идентификатор;";
+        $result = "Идентификатор|";
         foreach ($attributes as $attribute) {
-            $result .= "{$attribute->name};";
+            $result .= "{$attribute->name}|";
         }
         $result .= "Эталонное наименование";
         file_put_contents($disk->path($file), $result . "\n", FILE_APPEND | LOCK_EX);
@@ -48,7 +48,7 @@ class Download extends Command
         while($items->count()) {
 
             foreach ($items as $item) {
-                $result = "{$item->id};";
+                $result = "{$item->id}|";
                 $standard = null;
 
                 foreach ($attributes as $attribute) {
@@ -58,7 +58,7 @@ class Download extends Command
                         }
                         $result .= "{$value->value}";
                     }
-                    $result.= ";";
+                    $result.= "|";
                 }
 
                 $result .= $standard;
