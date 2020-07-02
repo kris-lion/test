@@ -120,15 +120,6 @@ class ItemController extends Controller
 
         $key = hash('sha512', $search);
 
-        try {
-            if (Cache::has($key)) {
-                $id = Cache::get($key);
-                $cache = true;
-            }
-        } catch (\Exception $e) {
-            Log::warning($e);
-        }
-
         if (!$cache) {
             $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
             if (count($hits)) {
@@ -154,6 +145,8 @@ class ItemController extends Controller
             'result',
             'search'
         ];
+
+        $result = null;
 
         if ($item) {
             $id = $item->id;
