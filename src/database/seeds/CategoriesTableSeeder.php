@@ -71,7 +71,7 @@ class CategoriesTableSeeder extends Seeder
 
             $category->attributes()->create([
                 'name'     => 'Объем, вес и дозы',
-                'type_id'  => $types->where('key', 'double')->first()->id,
+                'type_id'  => $types->where('key', 'string')->first()->id,
                 'required' => false,
                 'search'   => true
             ]);
@@ -428,13 +428,13 @@ class CategoriesTableSeeder extends Seeder
 
             $category->attributes()->create([
                 'name'     => 'Вес',
-                'type_id'  => $types->where('key', 'double')->first()->id,
+                'type_id'  => $types->where('key', 'string')->first()->id,
                 'required' => false
             ]);
 
             $category->attributes()->create([
                 'name'     => 'Объем',
-                'type_id'  => $types->where('key', 'double')->first()->id,
+                'type_id'  => $types->where('key', 'string')->first()->id,
                 'required' => false
             ]);
 

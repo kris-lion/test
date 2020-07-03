@@ -242,16 +242,35 @@ class File extends Command
                                             $row[13] = 'л; дм3';
                                     }
 
-                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [trim(mb_strtolower($row[6]))])->first()) {
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [trim(mb_strtolower($row[13]))])->first()) {
                                         $value = $unit->short;
                                     }
                                 }
                                 break;
                             case 'Вес':
                                 $value = $row[14];
+                                if (!empty($row[14])) {
+                                    switch ($row[14]) {
+                                        case 'л':
+                                            $row[14] = 'л; дм3';
+                                    }
+
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [trim(mb_strtolower($row[14]))])->first()) {
+                                        $value = $unit->short;
+                                    }
+                                }
                                 break;
                             case 'Объем':
-                                $value = $row[15];
+                                if (!empty($row[15])) {
+                                    switch ($row[15]) {
+                                        case 'л':
+                                            $row[15] = 'л; дм3';
+                                    }
+
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [trim(mb_strtolower($row[15]))])->first()) {
+                                        $value = $unit->short;
+                                    }
+                                }
                                 break;
                             case 'Количество':
                                 $value = $row[16];

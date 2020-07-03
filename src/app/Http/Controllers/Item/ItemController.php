@@ -122,6 +122,7 @@ class ItemController extends Controller
 
         if (!$cache) {
             $hits = Item::search(['search' => $search, 'categories' => $categories])->raw()['hits']['hits'];
+
             if (count($hits)) {
                 $id = $hits[0]['_source']['id'];
                 $highlight = $hits[0]['highlight'];

@@ -6,6 +6,7 @@ use App\Models\Category\Attribute\Value;
 use App\Models\Category\Category;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Log;
 use Laravel\Scout\Searchable;
 
 class Item extends Model
@@ -32,6 +33,12 @@ class Item extends Model
                 switch ($attribute->type->key) {
                     case 'multiselect':
                         $attributes["attribute_{$attribute->id}"] = json_decode($value->value, true);
+                        break;
+                    case 'double':
+                        $attributes["attribute_{$attribute->id}"] = (double) $value->value;
+                        break;
+                    case 'integer':
+                        $attributes["attribute_{$attribute->id}"] = (integer) $value->value;
                         break;
                     default:
                         $attributes["attribute_{$attribute->id}"] = $value->value;
