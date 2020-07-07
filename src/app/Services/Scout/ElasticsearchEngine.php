@@ -138,9 +138,11 @@ class ElasticsearchEngine extends Engine
             foreach ($category->attributes as $attribute) {
                 if ($generic and ($attribute->value === 'generics')) {
                     $generic['field'] = "attribute_{$attribute->id}.ngram^2";
+                    $generic['field'] = "attribute_{$attribute->id}^2";
                 }
                 if ($attribute->search) {
                     $fields[] = $attribute->priority ? "attribute_{$attribute->id}.ngram^2" : "attribute_{$attribute->id}.ngram";
+                    $fields[] = $attribute->priority ? "attribute_{$attribute->id}^2" : "attribute_{$attribute->id}";
                 }
             }
         }
