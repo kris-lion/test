@@ -149,7 +149,7 @@ class Item extends React.Component {
             })
 
             if (!value.length || (value.length >= 3)) {
-                return actions.items({...{category: category.id}, ...((value.length >= 3) ? {search: value} : {})}).then(() => {
+                return actions.items({...{category: category.id, limit: rowsPerPage}, ...((value.length >= 3) ? {search: value} : {})}).then(() => {
                     if (category.hasOwnProperty('attributes')) {
                         let dictionaries = this.state.dictionaries
                         let columns = []
