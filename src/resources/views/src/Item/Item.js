@@ -62,7 +62,7 @@ class Item extends React.Component {
             category: {},
             dialog: false,
             page: 0,
-            rowsPerPage: 10,
+            rowsPerPage: 100,
             columns: [],
             dictionaries: {},
             offers: {
@@ -147,7 +147,8 @@ class Item extends React.Component {
             const category = event.target.value
 
             this.setState({
-                category: category
+                category: category,
+                page: 0
             })
 
             return actions.items({ page: 1, limit: this.state.rowsPerPage, category: category.id }).then(() => {
@@ -184,7 +185,7 @@ class Item extends React.Component {
         const handleChangePage = (event, newPage) => {
             const { actions } = this.props
 
-            return actions.items({ page: ++newPage, limit: rowsPerPage }).then(
+            return actions.items({ page: ++newPage, limit: rowsPerPage, category: category.id }).then(
                 () => {
                     this.setState({ page: --newPage })
                 }
@@ -196,7 +197,7 @@ class Item extends React.Component {
 
             this.setState({ page: 0, rowsPerPage: +event.target.value })
 
-            return actions.items({ page: 1, limit: +event.target.value})
+            return actions.items({ page: 1, limit: +event.target.value, category: category.id})
         };
 
         const getValue = (values, id) => {
@@ -308,8 +309,9 @@ class Item extends React.Component {
                 </Grid>
                 <Grid item className={classes.item}>
                     <TablePagination
-                        rowsPerPageOptions={ [10, 25, 100] }
-                        component="div"
+                        rowsPerPageOptions={ [50, 100, 200] }
+                        component='div'
+                        labelRowsPerPage={'Записей на странице:'}
                         count={ items.data.length ? items.meta.total : 0 }
                         rowsPerPage={ rowsPerPage }
                         page={ page }

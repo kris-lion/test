@@ -56,7 +56,7 @@ class Category extends React.Component {
             category: null,
             dialog: false,
             page: 0,
-            rowsPerPage: 10
+            rowsPerPage: 100
         };
     }
 
@@ -187,7 +187,7 @@ class Category extends React.Component {
                 </Grid>
                 <Grid item className={classes.item}>
                     <TablePagination
-                        rowsPerPageOptions={ [10, 25, 100] }
+                        rowsPerPageOptions={ [50, 100, 200] }
                         component="div"
                         count={ categories.data.length ? categories.meta.total : 0 }
                         rowsPerPage={ rowsPerPage }

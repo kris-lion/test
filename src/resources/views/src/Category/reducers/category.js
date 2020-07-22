@@ -1,4 +1,4 @@
-export default function category (state = { categories: { data: [], meta: {}, search: null, limit: 10, page: 1 } }, action) {
+export default function category (state = { categories: { data: [], meta: {}, search: null, limit: 100, page: 1 } }, action) {
     switch (action.type) {
         case 'CATEGORIES_REQUEST':
             return {
