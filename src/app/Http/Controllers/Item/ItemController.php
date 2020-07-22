@@ -40,35 +40,12 @@ class ItemController extends Controller
                     $categories = Category::with('attributes')->get();
                 }
 
-                $sequence = Item::search(['search' => $search, 'categories' => $categories, 'generic' => $request->get('generic')])->paginate($request->get('limit'))->pluck('id')->toArray();
-
-                $items = Item::where(function ($query) use ($request) {
-                    if ($request->has('except') and !empty($request->get('except'))) {
-                        $query->whereNotIn('id', explode(',', $request->get('except')));
-                    }
-                    if ($request->has('generic') and !empty($request->get('generic'))) {
-                        $query->whereHas('values', function ($query) use ($request) {
-                            $query->whereRaw('LOWER(value) LIKE ? ', [trim(mb_strtolower($request->get('generic')))]);
-                            $query->whereHas('attribute', function ($query) {
-                                $query->where(['value' => 'generics']);
-                            });
-                        });
-                    }
-                })->whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
+                $items = Item::search(['search' => $search, 'categories' => $categories, 'generic' => $request->get('generic'), 'except' => ($request->has('except') and !empty($request->get('except'))) ? explode(',', $request->get('except')) : []])->paginate($request->get('limit'));
+                $items->load(['category', 'values' => function ($query) {
                     $query->with(['attribute' => function ($query) {
-                        $query->with('type', 'options');
+                        $query->with('options', 'type');
                     }]);
-                }])->whereIn('category_id', $categories->pluck('id')->toArray());
-
-                if ($request->has('active')) {
-                    $items->where(['active' => ($request->get('active') === 'true')]);
-                }
-
-                $items = $items->orderBy('active')->orderBy('id')->paginate($request->has('limit') ? $request->get('limit') : $items->count());
-
-                $items->setCollection($items->getCollection()->sortBy(function($item) use ($sequence) {
-                    return array_search($item->getKey(), $sequence);
-                }));
+                }]);
             } else {
                 $items = Item::query();
 

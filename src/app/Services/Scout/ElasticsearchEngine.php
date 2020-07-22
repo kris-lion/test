@@ -147,6 +147,8 @@ class ElasticsearchEngine extends Engine
             }
         }
 
+        $except = $builder->query['except'];
+
         if ($generic) {
             $params = [
                 'index' => '_all',
@@ -155,20 +157,27 @@ class ElasticsearchEngine extends Engine
                         'bool' => [
                             'should' => [
                                 [
-                                    'multi_match' => [
-                                        'query'       => $generic['search'],
-                                        'type'        => 'cross_fields',
-                                        'fields'      => $generic['field'],
-                                        'tie_breaker' => 0.5
+                                    [
+                                        'multi_match' => [
+                                            'query'       => $generic['search'],
+                                            'type'        => 'cross_fields',
+                                            'fields'      => $generic['field'],
+                                            'tie_breaker' => 0.5
+                                        ]
+                                    ],
+                                    [
+                                        'multi_match' => [
+                                            'query'       => $builder->query['search'],
+                                            'type'        => 'cross_fields',
+                                            'fields'      => $fields,
+                                            'tie_breaker' => 0.5
+                                        ],
                                     ]
                                 ],
-                                [
-                                    'multi_match' => [
-                                        'query'       => $builder->query['search'],
-                                        'type'        => 'cross_fields',
-                                        'fields'      => $fields,
-                                        'tie_breaker' => 0.5
-                                    ],
+                            ],
+                            'must_not' => [
+                                'terms' => [
+                                    'id' => $except
                                 ]
                             ]
                         ],
@@ -184,12 +193,23 @@ class ElasticsearchEngine extends Engine
             $params = [
                 'index' => '_all',
                 'body'  => [
-                    'query' => [
-                        'multi_match' => [
-                            'query'       => $builder->query['search'],
-                            'type'        => 'cross_fields',
-                            'fields'      => $fields,
-                            'tie_breaker' => 0.5,
+                    'query' =>[
+                        'bool' => [
+                            'should' => [
+                                [
+                                    'multi_match' => [
+                                        'query'       => $builder->query['search'],
+                                        'type'        => 'cross_fields',
+                                        'fields'      => $fields,
+                                        'tie_breaker' => 0.5,
+                                    ]
+                                ],
+                            ],
+                            'must_not' => [
+                                'terms' => [
+                                    'id' => $except
+                                ]
+                            ]
                         ]
                     ],
                     'highlight' => [
