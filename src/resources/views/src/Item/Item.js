@@ -145,11 +145,12 @@ class Item extends React.Component {
             const value = event.target.value
 
             this.setState({
-                search: value
+                search: value,
+                page: 0
             })
 
             if (!value.length || (value.length >= 3)) {
-                return actions.items({...{category: category.id, limit: rowsPerPage}, ...((value.length >= 3) ? {search: value} : {})}).then(() => {
+                return actions.items({...{page: 0, category: category.id, limit: rowsPerPage}, ...((value.length >= 3) ? {search: value} : {})}).then(() => {
                     if (category.hasOwnProperty('attributes')) {
                         let dictionaries = this.state.dictionaries
                         let columns = []
