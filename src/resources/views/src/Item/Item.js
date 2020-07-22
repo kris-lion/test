@@ -58,7 +58,7 @@ class Item extends React.Component {
         super(props);
 
         this.state = {
-            search: null,
+            search: '',
             item: null,
             category: {},
             dialog: false,
@@ -132,7 +132,7 @@ class Item extends React.Component {
                 return actions.add(values).then(
                     () => {
                         if (category) {
-                            return actions.items({page: page + 1, limit: rowsPerPage, category: category.id})
+                            return actions.items({...{page: page + 1, limit: rowsPerPage, category: category.id}, ...((search.length >= 3) ? {search: search} : {})})
                         }
                     }
                 )
@@ -194,7 +194,7 @@ class Item extends React.Component {
                 page: 0
             })
 
-            return actions.items({ page: 1, limit: this.state.rowsPerPage, category: category.id }).then(() => {
+            return actions.items({...{ page: 1, limit: this.state.rowsPerPage, category: category.id }, ...((search.length >= 3) ? {search: search} : {})}).then(() => {
                 if (category.hasOwnProperty('attributes')) {
                     let dictionaries  = this.state.dictionaries
                     let columns = []
@@ -231,7 +231,7 @@ class Item extends React.Component {
         const handleChangePage = (event, newPage) => {
             const { actions } = this.props
 
-            return actions.items({ page: ++newPage, limit: rowsPerPage, category: category.id }).then(
+            return actions.items({...{ page: ++newPage, limit: rowsPerPage, category: category.id }, ...((search.length >= 3) ? {search: search} : {})}).then(
                 () => {
                     this.setState({ page: --newPage })
                 }
@@ -243,7 +243,7 @@ class Item extends React.Component {
 
             this.setState({ page: 0, rowsPerPage: +event.target.value })
 
-            return actions.items({ page: 1, limit: +event.target.value, category: category.id})
+            return actions.items({...{ page: 1, limit: +event.target.value, category: category.id}, ...((search.length >= 3) ? {search: search} : {})})
         };
 
         const getValue = (values, id) => {
