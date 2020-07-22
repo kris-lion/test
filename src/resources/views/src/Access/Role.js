@@ -41,13 +41,13 @@ const columns = [
     {
         id: 'name',
         label: 'Наименование',
-        align: 'center',
+        align: 'left',
         format: value => value.toLocaleString()
     },
     {
         id: 'key',
         label: 'Уникальный ключ',
-        align: 'center',
+        align: 'left',
         format: value => value.toLocaleString()
     }
 ];
@@ -147,10 +147,10 @@ class Role extends React.Component {
                                 {roles.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, role: item })}}>
-                                            <TableCell align="center">
+                                            <TableCell align="left">
                                                 { item.description }
                                             </TableCell>
-                                            <TableCell align="center">
+                                            <TableCell align="left">
                                                 { item.name }
                                             </TableCell>
                                         </TableRow>

@@ -41,7 +41,7 @@ const columns = [
     {
         id: 'login',
         label: 'Имя пользователя',
-        align: 'center',
+        align: 'left',
         format: value => value.toLocaleString()
     }
 ];
@@ -141,7 +141,7 @@ class User extends React.Component {
                                 {users.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, user: item })}}>
-                                            <TableCell align="center">
+                                            <TableCell align="left">
                                                 { item.login }
                                             </TableCell>
                                         </TableRow>

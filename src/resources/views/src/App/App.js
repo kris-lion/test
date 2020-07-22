@@ -115,10 +115,10 @@ class App extends React.Component {
                     </Toolbar>
                     { application.filling && <LinearProgress /> }
                 </AppBar>
-                <Container fixed className={ classes.container }>
+                <Container maxWidth="xl" fixed className={ classes.container }>
                     <Paper className={ classes.paper }>
                         <Grid container direction="row" justify="flex-start" alignItems="flex-start" className={ classes.body }>
-                            <Grid item md={ 3 }>
+                            <Grid item md={ 2 }>
                                 <List aria-label="contacts">
                                     { AuthorizationService.permissions(account, 'reference') &&
                                         <ListItem selected={location.pathname === '/items'} button component={Link} to={'/items'}>
@@ -154,7 +154,7 @@ class App extends React.Component {
                                     }
                                 </List>
                             </Grid>
-                            <Grid item md={9} className={ classes.item }>
+                            <Grid item md={10} className={ classes.item }>
                                 { content }
                             </Grid>
                         </Grid>

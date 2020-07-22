@@ -163,7 +163,7 @@ class Category extends React.Component {
                                     {columns.map(column => (
                                         <TableCell
                                             key={column.id}
-                                            align={column.align}
+                                            align="left"
                                             style={{ minWidth: column.minWidth }}
                                         >
                                             {column.label}
@@ -175,7 +175,7 @@ class Category extends React.Component {
                                 {categories.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, category: item })}}>
-                                            <TableCell align="center">
+                                            <TableCell align="left">
                                                 { item.name }
                                             </TableCell>
                                         </TableRow>

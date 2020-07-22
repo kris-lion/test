@@ -278,8 +278,7 @@ class Item extends React.Component {
                                     {columns.map(column => (
                                         <TableCell
                                             key={column.id}
-                                            align={column.align}
-                                            style={{ minWidth: column.minWidth }}
+                                            align="left"
                                         >
                                             {column.label}
                                         </TableCell>
@@ -290,16 +289,19 @@ class Item extends React.Component {
                                 {items.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, item: item })}} className={ !item.active ? classes.active : classes.default } >
-                                            {columns.map(column => (
-                                                <TableCell
-                                                    key={ column.id }
-                                                    align="center"
-                                                >
-                                                    {
-                                                        getValue(item.values, column.id)
-                                                    }
-                                                </TableCell>
-                                            ))}
+                                            {columns.map(column => {
+                                                const value = getValue(item.values, column.id)
+
+                                                return (
+                                                    <TableCell
+                                                        key={column.id}
+                                                        align="left"
+                                                        title={value}
+                                                    >
+                                                        {value}
+                                                    </TableCell>
+                                                )
+                                            })}
                                         </TableRow>
                                     );
                                 })}
