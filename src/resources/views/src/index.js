@@ -38,6 +38,11 @@ const theme = createMuiTheme({
                 "padding": "4px"
             }
         },
+        MuiTableRow: {
+            root: {
+                "cursor": "pointer"
+            }
+        },
         MuiTableBody: {
             root: {
                 '& .MuiTableCell-root': {

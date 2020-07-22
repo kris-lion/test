@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles'
 import {
     Grid,
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
-    Fab
+    Fab, MenuItem
 } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import { CategoryActions } from "./actions/category";
@@ -45,7 +45,7 @@ const columns = [
         label: 'Наименование',
         align: 'center',
         format: value => value.toLocaleString()
-    },
+    }
 ];
 
 class Category extends React.Component {
@@ -54,20 +54,17 @@ class Category extends React.Component {
 
         this.state = {
             category: null,
-            dialog: false,
-            page: 0,
-            rowsPerPage: 100
+            dialog: false
         };
     }
 
     componentDidMount () {
         const { actions, type, system } = this.props
-        const { rowsPerPage } = this.state
 
         type.types();
         system.categories();
 
-        return actions.categories({ limit: rowsPerPage })
+        return actions.categories()
     }
 
     componentWillUnmount() {
@@ -78,7 +75,7 @@ class Category extends React.Component {
 
     render() {
         const { categories, options, classes } = this.props
-        const { category, dialog, page, rowsPerPage } = this.state
+        const { category, dialog } = this.state
 
         const handleDelete = (id, params = null) => {
             const { actions, item, system } = this.props
@@ -88,7 +85,7 @@ class Category extends React.Component {
                     return actions.remove(id, params).then(
                         () => {
                             system.categories();
-                            actions.categories({page: page + 1, limit: rowsPerPage})
+                            actions.categories()
                             resolve()
                         }
                     )
@@ -102,7 +99,7 @@ class Category extends React.Component {
                                     return actions.remove(id).then(
                                         () => {
                                             system.categories();
-                                            actions.categories({page: page + 1, limit: rowsPerPage})
+                                            actions.categories()
                                             resolve()
                                         }
                                     )
@@ -129,29 +126,44 @@ class Category extends React.Component {
                 return actions.add(values).then(
                     () => {
                         system.categories();
-                        return actions.categories({ page: page + 1, limit: rowsPerPage })
+                        return actions.categories()
                     }
                 )
             }
         }
 
-        const handleChangePage = (event, newPage) => {
-            const { actions } = this.props
+        const assembly = (categories, parent = 0, level = 0) => {
+            let result = []
 
-            return actions.categories({ page: ++newPage, limit: rowsPerPage }).then(
-                () => {
-                    this.setState({ page: --newPage })
+            if (categories.hasOwnProperty(parent)) {
+                categories[parent].forEach(category => {
+                    result.push(
+                        <TableRow key={category.id} hover role="checkbox" tabIndex={-1} onClick={() => { this.setState({ dialog: true, category: category })}}>
+                            <TableCell align="left">
+                                { '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }
+                            </TableCell>
+                        </TableRow>
+                    )
+
+                    result = result.concat(assembly(categories, category.id, level + 1))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = categories => {
+            let tmp = {}
+            categories.forEach(category => {
+                if (!tmp.hasOwnProperty((category.category !== null) ? category.category.id : 0)) {
+                    tmp[(category.category !== null) ? category.category.id : 0] = []
                 }
-            )
-        };
 
-        const handleChangeRowsPerPage = event => {
-            const { actions } = this.props
+                tmp[(category.category !== null) ? category.category.id : 0].push(category)
+            })
 
-            this.setState({ page: 0, rowsPerPage: +event.target.value })
-
-            return actions.categories({ page: 1, limit: +event.target.value})
-        };
+            return assembly(tmp)
+        }
 
         return (
             <Grid container direction="column" justify="space-between" alignItems="center" className={classes.field}>
@@ -172,29 +184,10 @@ class Category extends React.Component {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {categories.data.map(item => {
-                                    return (
-                                        <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, category: item })}}>
-                                            <TableCell align="left">
-                                                { item.name }
-                                            </TableCell>
-                                        </TableRow>
-                                    );
-                                })}
+                                {getCategoriesTree(categories.data)}
                             </TableBody>
                         </Table>
                     </TableContainer>
-                </Grid>
-                <Grid item className={classes.item}>
-                    <TablePagination
-                        rowsPerPageOptions={ [50, 100, 200] }
-                        component="div"
-                        count={ categories.data.length ? categories.meta.total : 0 }
-                        rowsPerPage={ rowsPerPage }
-                        page={ page }
-                        onChangePage={ handleChangePage }
-                        onChangeRowsPerPage={ handleChangeRowsPerPage }
-                    />
                 </Grid>
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />

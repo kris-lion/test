@@ -40,7 +40,7 @@ class ItemController extends Controller
                     $categories = Category::with('attributes')->get();
                 }
 
-                $sequence = Item::search(['search' => $search, 'categories' => $categories, 'generic' => $request->get('generic')])->get()->pluck('id')->toArray();
+                $sequence = Item::search(['search' => $search, 'categories' => $categories, 'generic' => $request->get('generic')])->paginate($request->get('limit'))->pluck('id')->toArray();
 
                 $items = Item::where(function ($query) use ($request) {
                     if ($request->has('except') and !empty($request->get('except'))) {

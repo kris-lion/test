@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core/styles'
 import {
     Grid, Badge,
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
-    Fab, Select, MenuItem
+    Fab, Select, MenuItem, TextField
 } from '@material-ui/core'
 import { red } from '@material-ui/core/colors'
 import { Check } from '@material-ui/icons';
@@ -25,7 +25,7 @@ const style = theme => ({
         'height': '100%'
     },
     data: {
-        'height': 'calc(100% - 84px)',
+        'height': 'calc(100% - 132px)',
         'width': '100%'
     },
     item: {
@@ -58,6 +58,7 @@ class Item extends React.Component {
         super(props);
 
         this.state = {
+            search: null,
             item: null,
             category: {},
             dialog: false,
@@ -93,7 +94,7 @@ class Item extends React.Component {
 
     render() {
         const { items, categories, classes } = this.props
-        const { item, category, dialog, page, rowsPerPage, columns, offers } = this.state
+        const { item, category, dialog, page, rowsPerPage, columns, offers, search } = this.state
 
         const handleDelete = (id) => {
             const { actions } = this.props
@@ -125,19 +126,61 @@ class Item extends React.Component {
 
                             this.setState({ offers: { count: --offers.count, categories: categories } })
                         }
-
-                        return dictionary.generics()
                     }
                 )
             } else {
                 return actions.add(values).then(
                     () => {
-                        dictionary.generics()
                         if (category) {
                             return actions.items({page: page + 1, limit: rowsPerPage, category: category.id})
                         }
                     }
                 )
+            }
+        }
+
+        const handleSearch = event => {
+            const { actions, dictionary } = this.props
+
+            const value = event.target.value
+
+            this.setState({
+                search: value
+            })
+
+            if (!value.length || (value.length >= 3)) {
+                return actions.items({...{category: category.id}, ...((value.length >= 3) ? {search: value} : {})}).then(() => {
+                    if (category.hasOwnProperty('attributes')) {
+                        let dictionaries = this.state.dictionaries
+                        let columns = []
+
+                        category.attributes.forEach((attribute) => {
+                            columns.push({
+                                id: attribute.id,
+                                label: attribute.name,
+                                align: 'center',
+                                format: value => value.toLocaleString()
+                            })
+
+                            if (attribute.type.key === 'dictionary') {
+                                switch (attribute.value) {
+                                    case 'generics':
+                                        if (!dictionaries.hasOwnProperty('generics')) {
+                                            dictionaries = {
+                                                ...dictionaries,
+                                                ...{generics: dictionary.generics()}
+                                            }
+                                        }
+                                        break
+                                    default:
+                                        break
+                                }
+                            }
+                        })
+
+                        this.setState({columns: columns, dictionaries: dictionaries})
+                    }
+                })
             }
         }
 
@@ -168,7 +211,10 @@ class Item extends React.Component {
                             switch (attribute.value) {
                                 case 'generics':
                                     if (!dictionaries.hasOwnProperty('generics')) {
-                                        dictionary.generics()
+                                        dictionaries = {
+                                            ...dictionaries,
+                                            ...{generics: dictionary.generics()}
+                                        }
                                     }
                                     break
                                 default:
@@ -251,9 +297,9 @@ class Item extends React.Component {
         }
 
         return (
-            <Grid container direction="column" justify="space-between" alignItems="center" className={classes.field}>
+            <Grid container direction="column" justify="flex-start" alignItems="stretch" className={classes.field} spacing={2}>
                 <Grid item className={classes.item}>
-                    <Grid container direction="row" justify="flex-end" alignItems="center">
+                    <Grid container direction="row" justify="space-between" alignItems="center">
                         <Grid item sm={3}>
                             <Badge badgeContent={ offers.count } color="secondary" className={ classes.fullWidth }>
                                 <Select
@@ -262,11 +308,19 @@ class Item extends React.Component {
                                     value={ category }
                                     onChange={ handleChange }
                                 >
-                                    {
-                                        getCategoriesTree(categories).map(el => el)
-                                    }
+                                    {getCategoriesTree(categories).map(el => el)}
                                 </Select>
                             </Badge>
+                        </Grid>
+                        <Grid item sm={3}>
+                            <TextField
+                                fullWidth
+                                id="category"
+                                disabled={!Object.keys(category).length}
+                                label='Поиск'
+                                value={search}
+                                onChange={ handleSearch }
+                            />
                         </Grid>
                     </Grid>
                 </Grid>
