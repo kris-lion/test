@@ -137,7 +137,6 @@ class ElasticsearchEngine extends Engine
         foreach ($categories as $category) {
             foreach ($category->attributes as $attribute) {
                 if ($generic and ($attribute->value === 'generics')) {
-                    $generic['field'] = "attribute_{$attribute->id}.ngram^2";
                     $generic['field'] = "attribute_{$attribute->id}^2";
                 }
                 if ($attribute->search) {
@@ -159,14 +158,6 @@ class ElasticsearchEngine extends Engine
                                 [
                                     [
                                         'multi_match' => [
-                                            'query'       => $generic['search'],
-                                            'type'        => 'cross_fields',
-                                            'fields'      => $generic['field'],
-                                            'tie_breaker' => 0.5
-                                        ]
-                                    ],
-                                    [
-                                        'multi_match' => [
                                             'query'       => $builder->query['search'],
                                             'type'        => 'cross_fields',
                                             'fields'      => $fields,
@@ -178,6 +169,11 @@ class ElasticsearchEngine extends Engine
                             'must_not' => [
                                 'terms' => [
                                     'id' => $except
+                                ]
+                            ],
+                            'filter' => [
+                                'term' => [
+                                    $generic['field'] => $generic['search']
                                 ]
                             ]
                         ],
@@ -298,6 +294,8 @@ class ElasticsearchEngine extends Engine
             $builder, $keys
         )->filter(function ($model) use ($keys) {
             return in_array($model->getScoutKey(), $keys);
+        })->sortBy(function($item) use ($keys) {
+            return array_search($item->getKey(), $keys);
         });
     }
 
