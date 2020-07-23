@@ -31,7 +31,7 @@ class File extends Command
 
                 $category = Category::where(['name' => 'Лекарственные средства'])->with('attributes.type')->first();
 
-                while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                while (($row = fgetcsv($handle, 1000, "|")) !== false) {
                     DB::beginTransaction();
 
                     echo "{$i}\n";
@@ -109,7 +109,7 @@ class File extends Command
 
                 $category = Category::where(['name' => 'Дезинфицирующие средства и Моющие средства'])->with('attributes.type')->first();
 
-                while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                while (($row = fgetcsv($handle, 1000, "|")) !== false) {
                     DB::beginTransaction();
 
                     echo "{$i}\n";
@@ -196,7 +196,7 @@ class File extends Command
 
                 $category = Category::where(['name' => 'Продукты питания'])->with('attributes.type')->first();
 
-                while (($row = fgetcsv($handle, 1000, ",")) !== false) {
+                while (($row = fgetcsv($handle, 1000, "|")) !== false) {
                     DB::beginTransaction();
 
                     echo "{$i}\n";
