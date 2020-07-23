@@ -147,14 +147,13 @@ class ElasticsearchEngine extends Engine
         }
 
         $except = $builder->query['except'];
-
         if ($generic) {
             $params = [
                 'index' => '_all',
                 'body'  => [
                     'query' => [
                         'bool' => [
-                            'should' => [
+                            'must' => [
                                 [
                                     [
                                         'multi_match' => [
@@ -163,17 +162,20 @@ class ElasticsearchEngine extends Engine
                                             'fields'      => $fields,
                                             'tie_breaker' => 0.5
                                         ],
+                                    ],
+                                    [
+                                        'multi_match' => [
+                                            'query'       => $generic['search'],
+                                            'type'        => 'cross_fields',
+                                            'fields'      => $generic['field'],
+                                            'tie_breaker' => 0.5
+                                        ],
                                     ]
                                 ],
                             ],
                             'must_not' => [
                                 'terms' => [
                                     'id' => $except
-                                ]
-                            ],
-                            'filter' => [
-                                'term' => [
-                                    $generic['field'] => $generic['search']
                                 ]
                             ]
                         ],
