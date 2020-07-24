@@ -146,7 +146,8 @@ class ElasticsearchEngine extends Engine
             }
         }
 
-        $except = $builder->query['except'];
+        $except = (array_key_exists('except', $builder->query) and !empty($builder->query['except'])) ? $builder->query['except'] : null;
+
         if ($generic) {
             $params = [
                 'index' => '_all',
