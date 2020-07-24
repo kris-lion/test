@@ -48,7 +48,7 @@ class UserController extends Controller
             ]);
 
             if ($request->has('roles') and count($request->get('roles'))) {
-                $user->roles()->attach(Role::where(['name' => $user])->first());
+                $user->roles()->attach(Role::where(['name' => 'user'])->first());
                 $user->roles()->attach($request->get('roles'));
             }
 
