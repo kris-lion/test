@@ -115,7 +115,7 @@ class Kernel extends ConsoleKernel
                                             $concurrencyAllAttribute = 0;
 
                                             // Kris
-                                            /*
+                                            
                                             $highlight_2 = $highlight;
                                             $highlight_clear = [];
                                             $k = 0;
@@ -161,7 +161,7 @@ class Kernel extends ConsoleKernel
                                                 }
                                                 
                                             }
-                                            */
+                                            
                                             // Kris end
                                             $match = [];
 
