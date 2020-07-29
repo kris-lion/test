@@ -1,0 +1,84 @@
+version: "3.3"
+services:
+  nginx:
+    image: nginx:latest
+    volumes:
+      - ./nginx/site.conf:/etc/nginx/conf.d/site.conf
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf
+      - ./var/nginx:/var/log/nginx
+      - ../src:/code:rw,cached
+    ports:
+      - 30080:80
+    links:
+      - app
+    networks:
+      - app
+  db:
+    image: postgres:12.1
+    restart: always
+    environment:
+      POSTGRES_DB: nomenclature
+      POSTGRES_USER: nomenclature
+      POSTGRES_PASSWORD: nomenclature
+    ports:
+      - 35432:5432
+    volumes:
+      - ./var/postgres/:/docker-entrypoint-initdb.d/
+      - ./var/postgres/data:/var/lib/postgresql/data:rw,cached
+    networks:
+      - app
+  app:
+    build:
+      context: ./php/
+    volumes:
+      - ../src:/code:rw,cached
+      - ./var/xhprof:/tmp
+    working_dir: /code
+    ports:
+      - 30008:8080
+    networks:
+      - app
+    links:
+      - db
+      - memcached
+      - redis
+      - elasticsearch
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 30081:8080
+    depends_on:
+      - db
+    networks:
+      - app
+  xhprof:
+    image: wpalmer/xhprof
+    ports:
+      - 30082:80
+    volumes:
+      - ./var/xhprof:/tmp
+    networks:
+      - app
+  memcached:
+    image: memcached
+    networks:
+      - app
+  redis:
+    image: redis
+    networks:
+      - app
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.6.0
+    ports:
+      - 30092:9200
+    volumes:
+      - ./var/elasticsearch/data:/usr/share/elasticsearch/data
+    environment:
+      - xpack.ml.enabled=false
+      - discovery.type=single-node
+    networks:
+      - app
+networks:
+  app:
