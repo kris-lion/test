@@ -41,13 +41,21 @@ const columns = [
     {
         id: 'name',
         label: 'Наименование',
+<<<<<<< HEAD
         align: 'center',
+=======
+        align: 'left',
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         format: value => value.toLocaleString()
     },
     {
         id: 'key',
         label: 'Уникальный ключ',
+<<<<<<< HEAD
         align: 'center',
+=======
+        align: 'left',
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         format: value => value.toLocaleString()
     }
 ];
@@ -147,10 +155,17 @@ class Role extends React.Component {
                                 {roles.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, role: item })}}>
+<<<<<<< HEAD
                                             <TableCell align="center">
                                                 { item.description }
                                             </TableCell>
                                             <TableCell align="center">
+=======
+                                            <TableCell align="left">
+                                                { item.description }
+                                            </TableCell>
+                                            <TableCell align="left">
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                                 { item.name }
                                             </TableCell>
                                         </TableRow>

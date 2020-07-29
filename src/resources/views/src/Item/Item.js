@@ -6,7 +6,11 @@ import { withStyles } from '@material-ui/core/styles'
 import {
     Grid, Badge,
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
+<<<<<<< HEAD
     Fab, Select, MenuItem
+=======
+    Fab, Select, MenuItem, TextField
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 } from '@material-ui/core'
 import { red } from '@material-ui/core/colors'
 import { Check } from '@material-ui/icons';
@@ -25,7 +29,11 @@ const style = theme => ({
         'height': '100%'
     },
     data: {
+<<<<<<< HEAD
         'height': 'calc(100% - 84px)',
+=======
+        'height': 'calc(100% - 132px)',
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         'width': '100%'
     },
     item: {
@@ -58,11 +66,19 @@ class Item extends React.Component {
         super(props);
 
         this.state = {
+<<<<<<< HEAD
+=======
+            search: '',
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
             item: null,
             category: {},
             dialog: false,
             page: 0,
+<<<<<<< HEAD
             rowsPerPage: 10,
+=======
+            rowsPerPage: 100,
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
             columns: [],
             dictionaries: {},
             offers: {
@@ -93,7 +109,11 @@ class Item extends React.Component {
 
     render() {
         const { items, categories, classes } = this.props
+<<<<<<< HEAD
         const { item, category, dialog, page, rowsPerPage, columns, offers } = this.state
+=======
+        const { item, category, dialog, page, rowsPerPage, columns, offers, search } = this.state
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 
         const handleDelete = (id) => {
             const { actions } = this.props
@@ -125,32 +145,97 @@ class Item extends React.Component {
 
                             this.setState({ offers: { count: --offers.count, categories: categories } })
                         }
+<<<<<<< HEAD
 
                         return dictionary.generics()
+=======
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                     }
                 )
             } else {
                 return actions.add(values).then(
                     () => {
+<<<<<<< HEAD
                         dictionary.generics()
                         if (category) {
                             return actions.items({page: page + 1, limit: rowsPerPage, category: category.id})
+=======
+                        if (category) {
+                            return actions.items({...{page: page + 1, limit: rowsPerPage, category: category.id}, ...((search.length >= 3) ? {search: search} : {})})
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                         }
                     }
                 )
             }
         }
 
+<<<<<<< HEAD
+=======
+        const handleSearch = event => {
+            const { actions, dictionary } = this.props
+
+            const value = event.target.value
+
+            this.setState({
+                search: value,
+                page: 0
+            })
+
+            if (!value.length || (value.length >= 3)) {
+                return actions.items({...{page: 0, category: category.id, limit: rowsPerPage}, ...((value.length >= 3) ? {search: value} : {})}).then(() => {
+                    if (category.hasOwnProperty('attributes')) {
+                        let dictionaries = this.state.dictionaries
+                        let columns = []
+
+                        category.attributes.forEach((attribute) => {
+                            columns.push({
+                                id: attribute.id,
+                                label: attribute.name,
+                                align: 'center',
+                                format: value => value.toLocaleString()
+                            })
+
+                            if (attribute.type.key === 'dictionary') {
+                                switch (attribute.value) {
+                                    case 'generics':
+                                        if (!dictionaries.hasOwnProperty('generics')) {
+                                            dictionaries = {
+                                                ...dictionaries,
+                                                ...{generics: dictionary.generics()}
+                                            }
+                                        }
+                                        break
+                                    default:
+                                        break
+                                }
+                            }
+                        })
+
+                        this.setState({columns: columns, dictionaries: dictionaries})
+                    }
+                })
+            }
+        }
+
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         const handleChange = event => {
             const { actions, dictionary } = this.props
 
             const category = event.target.value
 
             this.setState({
+<<<<<<< HEAD
                 category: category
             })
 
             return actions.items({ page: 1, limit: this.state.rowsPerPage, category: category.id }).then(() => {
+=======
+                category: category,
+                page: 0
+            })
+
+            return actions.items({...{ page: 1, limit: this.state.rowsPerPage, category: category.id }, ...((search.length >= 3) ? {search: search} : {})}).then(() => {
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                 if (category.hasOwnProperty('attributes')) {
                     let dictionaries  = this.state.dictionaries
                     let columns = []
@@ -167,7 +252,14 @@ class Item extends React.Component {
                             switch (attribute.value) {
                                 case 'generics':
                                     if (!dictionaries.hasOwnProperty('generics')) {
+<<<<<<< HEAD
                                         dictionary.generics()
+=======
+                                        dictionaries = {
+                                            ...dictionaries,
+                                            ...{generics: dictionary.generics()}
+                                        }
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                     }
                                     break
                                 default:
@@ -184,7 +276,11 @@ class Item extends React.Component {
         const handleChangePage = (event, newPage) => {
             const { actions } = this.props
 
+<<<<<<< HEAD
             return actions.items({ page: ++newPage, limit: rowsPerPage }).then(
+=======
+            return actions.items({...{ page: ++newPage, limit: rowsPerPage, category: category.id }, ...((search.length >= 3) ? {search: search} : {})}).then(
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                 () => {
                     this.setState({ page: --newPage })
                 }
@@ -196,7 +292,11 @@ class Item extends React.Component {
 
             this.setState({ page: 0, rowsPerPage: +event.target.value })
 
+<<<<<<< HEAD
             return actions.items({ page: 1, limit: +event.target.value})
+=======
+            return actions.items({...{ page: 1, limit: +event.target.value, category: category.id}, ...((search.length >= 3) ? {search: search} : {})})
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         };
 
         const getValue = (values, id) => {
@@ -250,9 +350,15 @@ class Item extends React.Component {
         }
 
         return (
+<<<<<<< HEAD
             <Grid container direction="column" justify="space-between" alignItems="center" className={classes.field}>
                 <Grid item className={classes.item}>
                     <Grid container direction="row" justify="flex-end" alignItems="center">
+=======
+            <Grid container direction="column" justify="flex-start" alignItems="stretch" className={classes.field} spacing={2}>
+                <Grid item className={classes.item}>
+                    <Grid container direction="row" justify="space-between" alignItems="center">
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                         <Grid item sm={3}>
                             <Badge badgeContent={ offers.count } color="secondary" className={ classes.fullWidth }>
                                 <Select
@@ -261,12 +367,29 @@ class Item extends React.Component {
                                     value={ category }
                                     onChange={ handleChange }
                                 >
+<<<<<<< HEAD
                                     {
                                         getCategoriesTree(categories).map(el => el)
                                     }
                                 </Select>
                             </Badge>
                         </Grid>
+=======
+                                    {getCategoriesTree(categories).map(el => el)}
+                                </Select>
+                            </Badge>
+                        </Grid>
+                        <Grid item sm={3}>
+                            <TextField
+                                fullWidth
+                                id="category"
+                                disabled={!Object.keys(category).length}
+                                label='Поиск'
+                                value={search}
+                                onChange={ handleSearch }
+                            />
+                        </Grid>
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                     </Grid>
                 </Grid>
                 <Grid item className={classes.data}>
@@ -277,8 +400,12 @@ class Item extends React.Component {
                                     {columns.map(column => (
                                         <TableCell
                                             key={column.id}
+<<<<<<< HEAD
                                             align={column.align}
                                             style={{ minWidth: column.minWidth }}
+=======
+                                            align="left"
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                         >
                                             {column.label}
                                         </TableCell>
@@ -289,6 +416,7 @@ class Item extends React.Component {
                                 {items.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, item: item })}} className={ !item.active ? classes.active : classes.default } >
+<<<<<<< HEAD
                                             {columns.map(column => (
                                                 <TableCell
                                                     key={ column.id }
@@ -299,6 +427,21 @@ class Item extends React.Component {
                                                     }
                                                 </TableCell>
                                             ))}
+=======
+                                            {columns.map(column => {
+                                                const value = getValue(item.values, column.id)
+
+                                                return (
+                                                    <TableCell
+                                                        key={column.id}
+                                                        align="left"
+                                                        title={value}
+                                                    >
+                                                        {value}
+                                                    </TableCell>
+                                                )
+                                            })}
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                         </TableRow>
                                     );
                                 })}
@@ -308,8 +451,14 @@ class Item extends React.Component {
                 </Grid>
                 <Grid item className={classes.item}>
                     <TablePagination
+<<<<<<< HEAD
                         rowsPerPageOptions={ [10, 25, 100] }
                         component="div"
+=======
+                        rowsPerPageOptions={ [50, 100, 200] }
+                        component='div'
+                        labelRowsPerPage={'Записей на странице:'}
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                         count={ items.data.length ? items.meta.total : 0 }
                         rowsPerPage={ rowsPerPage }
                         page={ page }

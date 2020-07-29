@@ -48,6 +48,10 @@ class UserController extends Controller
             ]);
 
             if ($request->has('roles') and count($request->get('roles'))) {
+<<<<<<< HEAD
+=======
+                $user->roles()->attach(Role::where(['name' => 'user'])->first());
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                 $user->roles()->attach($request->get('roles'));
             }
 

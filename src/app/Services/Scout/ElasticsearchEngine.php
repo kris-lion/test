@@ -137,7 +137,7 @@ class ElasticsearchEngine extends Engine
         foreach ($categories as $category) {
             foreach ($category->attributes as $attribute) {
                 if ($generic and ($attribute->value === 'generics')) {
-                    $generic['field'] = "attribute_{$attribute->id}.ngram^2";
+                    //$generic['field'] = "attribute_{$attribute->id}.ngram^2";
                     $generic['field'] = "attribute_{$attribute->id}^2";
                 }
                 if ($attribute->search) {
@@ -147,28 +147,37 @@ class ElasticsearchEngine extends Engine
             }
         }
 
+        $except = (array_key_exists('except', $builder->query) and !empty($builder->query['except'])) ? $builder->query['except'] : [];
+
         if ($generic) {
             $params = [
                 'index' => '_all',
                 'body'  => [
                     'query' => [
                         'bool' => [
-                            'should' => [
+                            'must' => [
                                 [
-                                    'multi_match' => [
-                                        'query'       => $generic['search'],
-                                        'type'        => 'cross_fields',
-                                        'fields'      => $generic['field'],
-                                        'tie_breaker' => 0.5
+                                    [
+                                        'multi_match' => [
+                                            'query'       => $builder->query['search'],
+                                            'type'        => 'cross_fields',
+                                            'fields'      => $fields,
+                                            'tie_breaker' => 0.5
+                                        ],
+                                    ],
+                                    [
+                                        'multi_match' => [
+                                            'query'       => $generic['search'],
+                                            'type'        => 'cross_fields',
+                                            'fields'      => $generic['field'],
+                                            'tie_breaker' => 0.5
+                                        ],
                                     ]
                                 ],
-                                [
-                                    'multi_match' => [
-                                        'query'       => $builder->query['search'],
-                                        'type'        => 'cross_fields',
-                                        'fields'      => $fields,
-                                        'tie_breaker' => 0.5
-                                    ],
+                            ],
+                            'must_not' => [
+                                'terms' => [
+                                    'id' => $except
                                 ]
                             ]
                         ],
@@ -184,12 +193,23 @@ class ElasticsearchEngine extends Engine
             $params = [
                 'index' => '_all',
                 'body'  => [
-                    'query' => [
-                        'multi_match' => [
-                            'query'       => $builder->query['search'],
-                            'type'        => 'cross_fields',
-                            'fields'      => $fields,
-                            'tie_breaker' => 0.5,
+                    'query' =>[
+                        'bool' => [
+                            'should' => [
+                                [
+                                    'multi_match' => [
+                                        'query'       => $builder->query['search'],
+                                        'type'        => 'cross_fields',
+                                        'fields'      => $fields,
+                                        'tie_breaker' => 0.5,
+                                    ]
+                                ],
+                            ],
+                            'must_not' => [
+                                'terms' => [
+                                    'id' => $except
+                                ]
+                            ]
                         ]
                     ],
                     'highlight' => [
@@ -278,6 +298,8 @@ class ElasticsearchEngine extends Engine
             $builder, $keys
         )->filter(function ($model) use ($keys) {
             return in_array($model->getScoutKey(), $keys);
+        })->sortBy(function($item) use ($keys) {
+            return array_search($item->getKey(), $keys);
         });
     }
 

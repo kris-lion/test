@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 export default function item (state = { items: { data: [], meta: {}, category: null, limit: 10, page: 1 } }, action) {
+=======
+export default function item (state = { items: { data: [], meta: {}, category: null, limit: 100, page: 1 } }, action) {
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
     switch (action.type) {
         case 'ITEMS_REQUEST':
             return {

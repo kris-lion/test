@@ -14,7 +14,11 @@ function generics (params = { }) {
                 generics => {
                     dispatch({ type: 'DICTIONARY_GENERICS_SUCCESS', payload: generics })
                     dispatch({ type: 'FILLING', payload: false })
+<<<<<<< HEAD
                     resolve()
+=======
+                    resolve(generics)
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                 },
                 error => {
                     dispatch({ type: 'DICTIONARY_GENERICS_FAILURE' })

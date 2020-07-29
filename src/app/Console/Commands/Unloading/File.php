@@ -56,7 +56,11 @@ class File extends Command
                                 $value = $row[4];
                                 break;
                             case 'МНН':
+<<<<<<< HEAD
                                 $value = $row[8];
+=======
+                                $value = $row[11];
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 
                                 if (!empty($value)) {
                                     if (!Generic::whereRaw('LOWER(name) LIKE ? ', [trim(mb_strtolower($value))])->first()) {
@@ -82,10 +86,17 @@ class File extends Command
                                 }
                                 break;
                             case 'Класс товара':
+<<<<<<< HEAD
                                 $value = $row[7];
                                 break;
                             case 'Лекарственная форма':
                                 $value = $row[11];
+=======
+                                $value = $row[10];
+                                break;
+                            case 'Лекарственная форма':
+                                $value = $row[13];
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                 break;
                         }
 
@@ -247,8 +258,38 @@ class File extends Command
                                     }
                                 }
                                 break;
+<<<<<<< HEAD
                             case 'Количество':
                                 $value = $row[14];
+=======
+                            case 'Вес':
+                                $value = $row[14];
+                                if (!empty($row[14])) {
+                                    switch ($row[14]) {
+                                        case 'л':
+                                            $row[14] = 'л; дм3';
+                                    }
+
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [trim(mb_strtolower($row[14]))])->first()) {
+                                        $value = $unit->short;
+                                    }
+                                }
+                                break;
+                            case 'Объем':
+                                if (!empty($row[15])) {
+                                    switch ($row[15]) {
+                                        case 'л':
+                                            $row[15] = 'л; дм3';
+                                    }
+
+                                    if ($unit = Unit::whereRaw('LOWER(short) LIKE ? ', [trim(mb_strtolower($row[15]))])->first()) {
+                                        $value = $unit->short;
+                                    }
+                                }
+                                break;
+                            case 'Количество':
+                                $value = $row[16];
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                 break;
                         }
 

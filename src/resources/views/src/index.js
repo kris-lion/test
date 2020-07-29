@@ -31,7 +31,34 @@ const store = createStore(
     applyMiddleware(thunk, logger)
 )
 
+<<<<<<< HEAD
 const theme = createMuiTheme({})
+=======
+const theme = createMuiTheme({
+    overrides: {
+        MuiTableCell: {
+            root: {
+                "padding": "4px"
+            }
+        },
+        MuiTableRow: {
+            root: {
+                "cursor": "pointer"
+            }
+        },
+        MuiTableBody: {
+            root: {
+                '& .MuiTableCell-root': {
+                    "white-space": "nowrap",
+                    "max-width": "100px",
+                    "overflow": "hidden",
+                    "text-overflow": "ellipsis"
+                }
+            }
+        }
+    }
+})
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 
 render(
     <MuiThemeProvider theme={ theme }>

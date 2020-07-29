@@ -6,7 +6,11 @@ import { withStyles } from '@material-ui/core/styles'
 import {
     Grid,
     TableContainer, Table, TableHead, TableBody, TableRow, TableCell, TablePagination,
+<<<<<<< HEAD
     Fab
+=======
+    Fab, MenuItem
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 } from '@material-ui/core'
 import AddIcon from '@material-ui/icons/Add';
 import { CategoryActions } from "./actions/category";
@@ -45,7 +49,11 @@ const columns = [
         label: 'Наименование',
         align: 'center',
         format: value => value.toLocaleString()
+<<<<<<< HEAD
     },
+=======
+    }
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 ];
 
 class Category extends React.Component {
@@ -54,20 +62,31 @@ class Category extends React.Component {
 
         this.state = {
             category: null,
+<<<<<<< HEAD
             dialog: false,
             page: 0,
             rowsPerPage: 10
+=======
+            dialog: false
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         };
     }
 
     componentDidMount () {
         const { actions, type, system } = this.props
+<<<<<<< HEAD
         const { rowsPerPage } = this.state
+=======
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 
         type.types();
         system.categories();
 
+<<<<<<< HEAD
         return actions.categories({ limit: rowsPerPage })
+=======
+        return actions.categories()
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
     }
 
     componentWillUnmount() {
@@ -78,7 +97,11 @@ class Category extends React.Component {
 
     render() {
         const { categories, options, classes } = this.props
+<<<<<<< HEAD
         const { category, dialog, page, rowsPerPage } = this.state
+=======
+        const { category, dialog } = this.state
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 
         const handleDelete = (id, params = null) => {
             const { actions, item, system } = this.props
@@ -88,7 +111,11 @@ class Category extends React.Component {
                     return actions.remove(id, params).then(
                         () => {
                             system.categories();
+<<<<<<< HEAD
                             actions.categories({page: page + 1, limit: rowsPerPage})
+=======
+                            actions.categories()
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                             resolve()
                         }
                     )
@@ -102,7 +129,11 @@ class Category extends React.Component {
                                     return actions.remove(id).then(
                                         () => {
                                             system.categories();
+<<<<<<< HEAD
                                             actions.categories({page: page + 1, limit: rowsPerPage})
+=======
+                                            actions.categories()
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                             resolve()
                                         }
                                     )
@@ -129,12 +160,17 @@ class Category extends React.Component {
                 return actions.add(values).then(
                     () => {
                         system.categories();
+<<<<<<< HEAD
                         return actions.categories({ page: page + 1, limit: rowsPerPage })
+=======
+                        return actions.categories()
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                     }
                 )
             }
         }
 
+<<<<<<< HEAD
         const handleChangePage = (event, newPage) => {
             const { actions } = this.props
 
@@ -152,6 +188,40 @@ class Category extends React.Component {
 
             return actions.categories({ page: 1, limit: +event.target.value})
         };
+=======
+        const assembly = (categories, parent = 0, level = 0) => {
+            let result = []
+
+            if (categories.hasOwnProperty(parent)) {
+                categories[parent].forEach(category => {
+                    result.push(
+                        <TableRow key={category.id} hover role="checkbox" tabIndex={-1} onClick={() => { this.setState({ dialog: true, category: category })}}>
+                            <TableCell align="left">
+                                { '\u00A0\u00A0\u00A0\u00A0'.repeat(level) + category.name }
+                            </TableCell>
+                        </TableRow>
+                    )
+
+                    result = result.concat(assembly(categories, category.id, level + 1))
+                })
+            }
+
+            return result
+        }
+
+        const getCategoriesTree = categories => {
+            let tmp = {}
+            categories.forEach(category => {
+                if (!tmp.hasOwnProperty((category.category !== null) ? category.category.id : 0)) {
+                    tmp[(category.category !== null) ? category.category.id : 0] = []
+                }
+
+                tmp[(category.category !== null) ? category.category.id : 0].push(category)
+            })
+
+            return assembly(tmp)
+        }
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
 
         return (
             <Grid container direction="column" justify="space-between" alignItems="center" className={classes.field}>
@@ -163,7 +233,11 @@ class Category extends React.Component {
                                     {columns.map(column => (
                                         <TableCell
                                             key={column.id}
+<<<<<<< HEAD
                                             align={column.align}
+=======
+                                            align="left"
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                             style={{ minWidth: column.minWidth }}
                                         >
                                             {column.label}
@@ -172,6 +246,7 @@ class Category extends React.Component {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
+<<<<<<< HEAD
                                 {categories.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, category: item })}}>
@@ -181,10 +256,14 @@ class Category extends React.Component {
                                         </TableRow>
                                     );
                                 })}
+=======
+                                {getCategoriesTree(categories.data)}
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                             </TableBody>
                         </Table>
                     </TableContainer>
                 </Grid>
+<<<<<<< HEAD
                 <Grid item className={classes.item}>
                     <TablePagination
                         rowsPerPageOptions={ [10, 25, 100] }
@@ -196,6 +275,8 @@ class Category extends React.Component {
                         onChangeRowsPerPage={ handleChangeRowsPerPage }
                     />
                 </Grid>
+=======
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                 <Fab size="medium" color="primary" aria-label="Добавить" className={ classes.fab } onClick={() => { this.setState({ dialog: true })}}>
                     <AddIcon />
                 </Fab>

@@ -15,9 +15,13 @@ class Item extends JsonResource
             'active'   => $this->active,
             'category' => new Category($this->whenLoaded('category')),
             'values'   => ValueResource::collection($this->whenLoaded('values')),
+<<<<<<< HEAD
             'name'     => $this->getName(),
             /** */ 
             'count'    => $this->count
+=======
+            'name'     => $this->getName()
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         ];
     }
 

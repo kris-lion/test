@@ -134,10 +134,17 @@ class ItemForm extends React.Component {
 
             switch (attribute.type.key) {
                 case 'select':
+<<<<<<< HEAD
                     items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
                     break
                 case 'multiselect':
                     items = item.attribute.options.map(option => { return { id: option.id, name: option.option } })
+=======
+                    items = attribute.options.map(option => { return { id: option.id, name: option.option } })
+                    break
+                case 'multiselect':
+                    items = attribute.options.map(option => { return { id: option.id, name: option.option } })
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                     break
                 case 'dictionary':
                     switch (attribute.value) {

@@ -41,7 +41,11 @@ const columns = [
     {
         id: 'login',
         label: 'Имя пользователя',
+<<<<<<< HEAD
         align: 'center',
+=======
+        align: 'left',
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
         format: value => value.toLocaleString()
     }
 ];
@@ -141,7 +145,11 @@ class User extends React.Component {
                                 {users.data.map(item => {
                                     return (
                                         <TableRow hover role="checkbox" tabIndex={-1} key={item.id} onClick={() => { this.setState({ dialog: true, user: item })}}>
+<<<<<<< HEAD
                                             <TableCell align="center">
+=======
+                                            <TableCell align="left">
+>>>>>>> 4fca0b746db03001dfaf7ffa390524fcc95fa8c3
                                                 { item.login }
                                             </TableCell>
                                         </TableRow>

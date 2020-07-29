@@ -206,7 +206,6 @@ class Kernel extends ConsoleKernel
                                         $sequence[] = $el['_source']['id'];
                                     }
 
-
                                     $items = Item::whereIn('id', $sequence)->with('category')->with(['values' => function ($query) {
                                         $query->with(['attribute' => function ($query) {
                                             $query->with('type', 'options');
