@@ -183,7 +183,7 @@ class ItemController extends Controller
                     $concurrencyAllAttribute = 0;
 
                     $match = [];
-                    /*
+                    
                     // Kris code
                     $highlight_2 = $highlight;
                     $highlight_clear = [];
@@ -229,7 +229,7 @@ class ItemController extends Controller
                         
                     }
                     // Kris code end
-                    */
+                    
 
                     foreach ($highlight_clear as $attr => $hit) {
                         $m = [];
